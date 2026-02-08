@@ -1,9 +1,9 @@
-FROM python:3.14-slim
+FROM python:3.13-slim
 
 ENV PORT=7860
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgl1-mesa-glx \
+    libgl1 \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
@@ -18,8 +18,6 @@ WORKDIR $HOME/app
 
 COPY --chown=user requirements.txt requirements.txt
 
-RUN pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
@@ -29,4 +27,4 @@ COPY --chown=user . $HOME/app
 
 EXPOSE ${PORT}
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", ${PORT}]
+CMD ["/bin/sh", "-c", "exec uvicorn main:app --host 0.0.0.0 --port $PORT"]
