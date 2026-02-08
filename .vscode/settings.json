@@ -32,5 +32,8 @@
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
   "tailwindCSS.experimental.configFile": "packages/ui/src/styles/globals.css"
 }
