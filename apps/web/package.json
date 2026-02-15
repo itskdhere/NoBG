@@ -4,8 +4,9 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "postinstall": "better-auth generate && prisma generate",
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "next build && prisma migrate deploy",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
