@@ -3,8 +3,11 @@
 import axios from "axios";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { authClient } from "@/lib/auth-client";
 import { AnimatedThemeToggler } from "@workspace/ui/components/animated-theme-toggler";
+import { AvatarDropdown } from "@/components/AvatarDropdown";
 import { Button } from "@workspace/ui/components/button";
 import FileSelector from "@/components/FileSelector";
 import {
@@ -18,11 +21,21 @@ import { cn } from "@workspace/ui/lib/utils";
 export type State = "idle" | "processing" | "done" | "error";
 
 export default function App() {
+  const router = useRouter();
+
   const [state, setState] = useState<State>("idle");
   const filesList = useRef<File[]>([]);
   const [processedImages, setProcessedImages] = useState<
     { src: string; originalName: string }[]
   >([]);
+
+  const { data: session, isPending } = authClient.useSession();
+
+  useEffect(() => {
+    if (!isPending && !session) {
+      router.push("/signin");
+    }
+  }, [isPending, session]);
 
   useEffect(() => {
     if (state === "processing") {
@@ -63,6 +76,10 @@ export default function App() {
     };
   }, []);
 
+  if (!session) {
+    return null;
+  }
+
   return (
     <>
       <header className="absolute w-full px-6 md:px-10 py-2 md:py-4">
@@ -78,6 +95,7 @@ export default function App() {
 
             <div className="flex justify-center items-center gap-6">
               <AnimatedThemeToggler className="hover:cursor-pointer" />
+              <AvatarDropdown session={session} />
             </div>
           </div>
         </div>
@@ -136,7 +154,7 @@ export default function App() {
                     <img
                       src={src}
                       alt={`Processed ${index}`}
-                      className="w-full h-auto object-contain"
+                      className="h-auto w-full max-w-xs object-contain"
                     />
 
                     <div className="flex flex-col justify-center items-center w-full">
