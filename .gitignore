@@ -31,7 +31,10 @@ dist
 npm-debug.log*
 
 # Misc
-temp/
-tmp/
 .DS_Store
 *.pem
+
+# Project
+temp/
+tmp/
+.vscode/mcp.json

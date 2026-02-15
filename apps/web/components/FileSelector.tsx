@@ -11,7 +11,7 @@ import {
   ArrowRight,
   Image,
 } from "lucide-react";
-import { State } from "@/app/page";
+import { State } from "@/app/app/page";
 
 export default function FileSelector({
   className,
