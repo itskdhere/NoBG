@@ -3,7 +3,9 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
 
-const PREFIX = "better-auth";
+const ENV = process.env.NODE_ENV === "production" ? "production" : "dev";
+
+const PREFIX = `${ENV}:better-auth`;
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
