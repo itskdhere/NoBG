@@ -32,7 +32,7 @@ export default function Landing() {
               <h1 className="text-2xl font-bold">NoBG</h1>
             </Link>
 
-            <div className="flex justify-center items-center gap-6">
+            <div className="flex justify-center items-center gap-4">
               <AnimatedThemeToggler className="hover:cursor-pointer" />
               <Button
                 variant="default"
@@ -40,7 +40,15 @@ export default function Landing() {
                 className="px-4 rounded-full cursor-pointer"
                 asChild
               >
-                <Link href="/app">Get Started</Link>
+                <Link href="/signup">Sign Up</Link>
+              </Button>
+              <Button
+                variant="secondary"
+                size="default"
+                className="px-4 rounded-full cursor-pointer"
+                asChild
+              >
+                <Link href="/signin">Sign In</Link>
               </Button>
             </div>
           </div>
@@ -64,7 +72,7 @@ export default function Landing() {
             in seconds. <br />
             No credit card required.
           </p>
-          <Link href="/app">
+          <Link href="/signup">
             <InteractiveHoverButton className="mt-10">
               Get Started Free
             </InteractiveHoverButton>
@@ -201,7 +209,7 @@ export default function Landing() {
           <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
             No sign-up needed. Upload your first image and see the magic.
           </p>
-          <Link href="/app">
+          <Link href="/signup">
             <InteractiveHoverButton className="mt-10">
               Get Started — It&apos;s Free
             </InteractiveHoverButton>
