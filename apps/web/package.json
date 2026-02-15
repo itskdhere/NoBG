@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "postinstall": "better-auth generate && prisma generate",
+    "postinstall": "prisma generate && better-auth generate",
     "dev": "next dev --turbopack",
     "build": "next build && prisma migrate deploy",
     "start": "next start",
