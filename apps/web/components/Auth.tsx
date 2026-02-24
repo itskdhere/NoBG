@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -15,12 +15,15 @@ import {
 } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
 import GitHub from "@/assets/GitHub";
-// import Google from "@/assets/Google.svg";
 
 export default function Auth({ type }: { type: "signin" | "signup" }) {
   const router = useRouter();
 
   const { data: session, isPending, error } = authClient.useSession();
+
+  const [stateGitHub, setStateGitHub] = useState<
+    "loading" | "idle" | "processing" | "done" | "error"
+  >("idle");
 
   useEffect(() => {
     if (session) {
@@ -28,21 +31,37 @@ export default function Auth({ type }: { type: "signin" | "signup" }) {
       router.push("/app");
     } else if (error) {
       console.error("Authentication error:", error);
+      setStateGitHub("error");
     }
   }, [session, error]);
 
-  // async function handleGoogleAuth() {
-  //   await authClient.signIn.social({
-  //     provider: "google",
-  //     callbackURL: "/app",
-  //   });
-  // }
+  useEffect(() => {
+    if (isPending) {
+      setStateGitHub("loading");
+    } else {
+      setStateGitHub("idle");
+    }
+  }, [isPending]);
 
   async function handleGitHubAuth() {
-    await authClient.signIn.social({
-      provider: "github",
-      callbackURL: "/app",
-    });
+    await authClient.signIn.social(
+      {
+        provider: "github",
+        callbackURL: "/app",
+      },
+      {
+        onRequest() {
+          setStateGitHub("processing");
+        },
+        onSuccess() {
+          setStateGitHub("done");
+        },
+        onError(err) {
+          console.error("GitHub authentication error:", err);
+          setStateGitHub("error");
+        },
+      }
+    );
   }
 
   return (
@@ -70,34 +89,37 @@ export default function Auth({ type }: { type: "signin" | "signup" }) {
         </CardHeader>
 
         <CardContent className="flex flex-col justify-center items-center gap-4 my-4">
-          {/* <Button
-            type="button"
-            variant="outline"
-            size="lg"
-            className="flex items-center justify-center gap-2 w-full cursor-pointer"
-            onClick={handleGoogleAuth}
-            disabled={isPending}
-          >
-            <Image src={Google} alt="Google" height={18} width={18} />
-            <span>
-              {type === "signin"
-                ? "Sign in with Google"
-                : "Sign up with Google"}
-            </span>
-          </Button> */}
           <Button
             type="button"
             variant="outline"
             size="lg"
             className="flex items-center justify-center gap-2 w-full cursor-pointer"
             onClick={handleGitHubAuth}
-            disabled={isPending}
+            disabled={
+              stateGitHub === "loading" ||
+              stateGitHub === "processing" ||
+              stateGitHub === "done"
+            }
           >
             <GitHub />
             <span>
-              {type === "signin"
-                ? "Sign in with Github"
-                : "Sign up with GitHub"}
+              {stateGitHub === "loading" && "Loading..."}
+              {stateGitHub === "idle" &&
+                (type === "signin"
+                  ? "Sign In with GitHub"
+                  : "Sign Up with GitHub")}
+              {stateGitHub === "processing" &&
+                (type === "signin"
+                  ? "Signing In with GitHub..."
+                  : "Signing Up with GitHub...")}
+              {stateGitHub === "done" &&
+                (type === "signin"
+                  ? "Sign In successful!"
+                  : "Sign Up successful!")}
+              {stateGitHub === "error" &&
+                (type === "signin"
+                  ? "Error signing In with GitHub"
+                  : "Error signing Up with GitHub")}
             </span>
           </Button>
         </CardContent>
