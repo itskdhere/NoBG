@@ -1,6 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, Response, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from rembg import remove
+from rembg import remove, new_session
 from PIL import Image, UnidentifiedImageError
 import io
 import os
@@ -10,6 +10,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="NoBG API")
+
+model_name = "birefnet-general"
+session = new_session(model_name)
 
 origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 
@@ -32,7 +35,7 @@ def remove_background(file: UploadFile = File(...)):
 
     try:
         input_image = Image.open(file.file)
-        output_image = remove(input_image)
+        output_image = remove(input_image, session=session)
         img_byte_arr = io.BytesIO()
         output_image.save(img_byte_arr, format="PNG")
         img_byte_arr.seek(0)
