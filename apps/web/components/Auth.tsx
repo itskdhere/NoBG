@@ -114,8 +114,8 @@ export default function Auth({ type }: { type: "signin" | "signup" }) {
                   : "Signing Up with GitHub...")}
               {stateGitHub === "done" &&
                 (type === "signin"
-                  ? "Sign In successful!"
-                  : "Sign Up successful!")}
+                  ? "Sign In successful! Redirecting..."
+                  : "Sign Up successful! Redirecting...")}
               {stateGitHub === "error" &&
                 (type === "signin"
                   ? "Error signing In with GitHub"
