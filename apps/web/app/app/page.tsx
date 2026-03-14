@@ -6,58 +6,203 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { upload } from "@vercel/blob/client";
 import { AnimatedThemeToggler } from "@workspace/ui/components/animated-theme-toggler";
 import { AvatarDropdown } from "@/components/AvatarDropdown";
 import { Button } from "@workspace/ui/components/button";
 import FileSelector from "@/components/FileSelector";
 import {
+  CloudUpload,
+  Ellipsis,
   LoaderPinwheel,
+  Download,
   OctagonAlert,
   RefreshCcwDot,
-  Download,
 } from "lucide-react";
 import { cn } from "@workspace/ui/lib/utils";
 
 export type State = "idle" | "processing" | "done" | "error";
 
+export type UploadServerData = {
+  jobId: string;
+  sourceUrl: string;
+};
+
 export default function App() {
   const router = useRouter();
 
   const [state, setState] = useState<State>("idle");
+  const [processingState, setProcessingState] = useState<
+    "uploading" | "queued" | "removing-bg" | null
+  >(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
   const filesList = useRef<File[]>([]);
+  const jobMap = useRef<Record<string, string>>({});
+
   const [processedImages, setProcessedImages] = useState<
     { src: string; originalName: string }[]
   >([]);
 
   const { data: session, isPending } = authClient.useSession();
 
+  const uploadFiles = async (files: File[]) => {
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      const totalFiles = files.length;
+      const fileProgress: Record<number, number> = {};
+
+      files.forEach((_, index) => {
+        fileProgress[index] = 0;
+      });
+
+      const updateOverallProgress = () => {
+        const totalProgress = Object.values(fileProgress).reduce(
+          (sum, p) => sum + p,
+          0
+        );
+        const overallProgress = Math.round(totalProgress / totalFiles);
+        setUploadProgress(overallProgress);
+      };
+
+      const uploadPromises = files.map(async (file, index) => {
+        const jobId = crypto.randomUUID();
+        const pathname = `${jobId}-${file.name}`;
+
+        const progressInterval = setInterval(() => {
+          const currentProgress = fileProgress[index] ?? 0;
+          if (currentProgress < 90) {
+            fileProgress[index] = Math.min(currentProgress + 10, 90);
+            updateOverallProgress();
+          }
+        }, 200);
+
+        try {
+          const blob = await upload(pathname, file, {
+            access: "public",
+            handleUploadUrl: "/api/upload",
+          });
+
+          clearInterval(progressInterval);
+          fileProgress[index] = 100;
+          updateOverallProgress();
+
+          return {
+            name: file.name,
+            jobId: jobId,
+            sourceUrl: blob.url,
+          };
+        } catch (error) {
+          clearInterval(progressInterval);
+          throw error;
+        }
+      });
+
+      const results = await Promise.all(uploadPromises);
+
+      setUploadProgress(100);
+
+      const jobIds: string[] = [];
+
+      results.forEach((result) => {
+        jobIds.push(result.jobId);
+        jobMap.current[result.jobId] = result.name;
+      });
+
+      setProcessingState("queued");
+      startPollingMultipleJobs(jobIds);
+    } catch (error) {
+      console.error("Upload error:", error);
+      setState("error");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const startPollingMultipleJobs = (initialJobIds: string[]) => {
+    let pendingJobIds = [...initialJobIds];
+    setProcessingState("queued");
+
+    const interval = setInterval(async () => {
+      try {
+        const checks = pendingJobIds.map(async (id) => {
+          try {
+            const res = await axios.get(`/api/status?jobId=${id}`);
+            return { id, ...res.data };
+          } catch (error) {
+            if (axios.isAxiosError(error) && error.response?.status === 404) {
+              return { id, status: "pending" };
+            }
+            throw error;
+          }
+        });
+
+        const results = await Promise.all(checks);
+
+        const finished = results.filter((job) => job.status === "completed");
+        const failed = results.filter((job) => job.status === "failed");
+        const processing = results.filter((job) => job.status === "processing");
+
+        if (failed.length > 0) {
+          clearInterval(interval);
+          setState("error");
+          return;
+        }
+
+        const pending = results.filter((job) => job.status === "pending");
+
+        if (processing.length > 0) {
+          setProcessingState("removing-bg");
+        } else if (pending.length > 0) {
+          setProcessingState("queued");
+        }
+
+        if (finished.length > 0) {
+          setProcessedImages((prev) => [
+            ...prev,
+            ...finished.map((f) => ({
+              src: f.result_url,
+              originalName: jobMap.current[f.id] || "image.png",
+            })),
+          ]);
+
+          const finishedIds = finished.map((f) => f.id);
+          pendingJobIds = pendingJobIds.filter(
+            (id) => !finishedIds.includes(id)
+          );
+        }
+
+        if (pendingJobIds.length === 0) {
+          clearInterval(interval);
+          setState("done");
+        }
+      } catch (error) {
+        console.error("Polling error:", error);
+        clearInterval(interval);
+        setState("error");
+      }
+    }, 2000);
+  };
+
   useEffect(() => {
     if (!isPending && !session) {
       router.push("/signin");
     }
-  }, [isPending, session]);
+  }, [isPending, session, router]);
 
   useEffect(() => {
-    if (state === "processing") {
+    if (isUploading) {
+      setProcessingState("uploading");
+    }
+  }, [isUploading]);
+
+  useEffect(() => {
+    if (state === "processing" && !isUploading && processingState === null) {
       const processFiles = async () => {
         try {
-          const promises = filesList.current.map(async (file) => {
-            const formData = new FormData();
-            formData.append("file", file);
-            const apiUrl =
-              process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-            const response = await axios.post(`${apiUrl}/remove-bg`, formData, {
-              headers: { "Content-Type": "multipart/form-data" },
-              responseType: "blob",
-            });
-            return {
-              src: URL.createObjectURL(response.data),
-              originalName: file.name,
-            };
-          });
-          const results = await Promise.all(promises);
-          setProcessedImages(results);
-          setState("done");
+          await uploadFiles(filesList.current);
         } catch (error) {
           console.error(error);
           setState("error");
@@ -66,7 +211,7 @@ export default function App() {
 
       processFiles();
     }
-  }, [state]);
+  }, [state, isUploading, processingState]);
 
   useEffect(() => {
     return () => {
@@ -101,7 +246,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="flex flex-col justify-center items-center min-h-screen w-full px-6 md:px-10 py-4 md:py-6">
+      <main className="flex flex-col justify-center items-center min-h-screen w-full px-6 md:px-10 py-4 md:py-6 pt-20 md:pt-24">
         <section className="flex flex-col justify-center items-center w-full min-h-100">
           {state === "idle" && (
             <div className="flex flex-col items-center gap-6 w-full">
@@ -119,8 +264,21 @@ export default function App() {
 
           {state === "processing" && (
             <div className="flex flex-col items-center gap-4">
-              <LoaderPinwheel className="size-10 animate-spin text-gray-800 dark:text-gray-200" />
-              <p className="text-lg font-medium">Processing...</p>
+              {processingState === "uploading" && (
+                <CloudUpload className="size-10 animate-bounce text-gray-800 dark:text-gray-200" />
+              )}
+              {processingState === "queued" && (
+                <Ellipsis className="size-10 animate-pulse text-gray-800 dark:text-gray-200" />
+              )}
+              {processingState === "removing-bg" && (
+                <LoaderPinwheel className="size-10 animate-spin text-gray-800 dark:text-gray-200" />
+              )}
+              <p className="text-lg font-medium">
+                {processingState === "uploading" &&
+                  `Uploading... ${uploadProgress}%`}
+                {processingState === "queued" && "Queued for processing..."}
+                {processingState === "removing-bg" && "Removing background..."}
+              </p>
             </div>
           )}
 
@@ -132,6 +290,7 @@ export default function App() {
                 className="hover:cursor-pointer"
                 onClick={() => {
                   setProcessedImages([]);
+                  setProcessingState(null);
                   setState("idle");
                 }}
               >
@@ -151,6 +310,7 @@ export default function App() {
                     key={index}
                     className="flex flex-col justify-between items-center gap-4 border rounded-lg p-2"
                   >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={src}
                       alt={`Processed ${index}`}
@@ -183,6 +343,15 @@ export default function App() {
               <p className="text-lg font-medium">
                 Oops! Something went wrong. Please try again.
               </p>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setProcessingState(null);
+                  setState("idle");
+                }}
+              >
+                Try Again
+              </Button>
             </div>
           )}
         </section>
