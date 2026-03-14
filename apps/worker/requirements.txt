@@ -1,0 +1,7 @@
+fastapi[standard]
+uvicorn[standard]
+rembg[cpu]
+pillow
+redis
+requests
+python-multipart
