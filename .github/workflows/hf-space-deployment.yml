@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "apps/api/**"
+      - "apps/worker/**"
   workflow_dispatch:
 
 jobs:
@@ -32,7 +32,7 @@ jobs:
           find . -maxdepth 1 ! -name '.git' ! -name '.' -exec rm -rf {} +
 
           cd $GITHUB_WORKSPACE
-          cp -r apps/api/. /tmp/hf_space/
+          cp -r apps/worker/. /tmp/hf_space/
 
           cd /tmp/hf_space
           git add .
