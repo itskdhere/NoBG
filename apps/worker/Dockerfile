@@ -24,6 +24,10 @@ COPY --chown=user src/download_model.py src/download_model.py
 
 COPY --chown=user src/config.py src/config.py
 
+ARG MODEL_NAME=u2net
+
+ENV MODEL_NAME=${MODEL_NAME}
+
 RUN python src/download_model.py
 
 COPY --chown=user . $HOME/app
