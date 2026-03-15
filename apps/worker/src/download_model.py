@@ -1,5 +1,5 @@
-from config import model_name
 from rembg import new_session
+from config import MODEL_NAME
 
 if __name__ == "__main__":
-    new_session(model_name)
+    new_session(MODEL_NAME)

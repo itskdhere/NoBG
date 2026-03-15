@@ -9,7 +9,7 @@ import redis
 from PIL import Image
 from rembg import remove, new_session
 from fastapi import FastAPI
-from .config import model_name, PREFIX
+from .config import MODEL_NAME, PREFIX
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ if not BLOB_READ_WRITE_TOKEN:
 
 r = redis.Redis.from_url(REDIS_URL, decode_responses=True)
 
-session = new_session(model_name)
+session = new_session(MODEL_NAME)
 
 app = FastAPI(title="NoBG Worker API")
 
