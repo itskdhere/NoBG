@@ -1,0 +1,15 @@
+name: nobg
+
+services:
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      tags:
+        - itskdhere/nobg-worker:latest
+    image: itskdhere/nobg-worker:latest
+    container_name: worker
+    ports:
+      - "8000:7860"
+    env_file:
+      - .env
