@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { authClient } from "@/lib/auth-client";
-import { upload } from "@vercel/blob/client";
+import { useUploadThing } from "@/lib/uploadthing-client";
 import { AnimatedThemeToggler } from "@workspace/ui/components/animated-theme-toggler";
 import { AvatarDropdown } from "@/components/AvatarDropdown";
 import { Button } from "@workspace/ui/components/button";
@@ -30,7 +30,6 @@ export type UploadServerData = {
 
 export default function App() {
   const router = useRouter();
-
   const [state, setState] = useState<State>("idle");
   const [processingState, setProcessingState] = useState<
     "uploading" | "queued" | "removing-bg" | null
@@ -39,6 +38,13 @@ export default function App() {
   const [isUploading, setIsUploading] = useState(false);
   const filesList = useRef<File[]>([]);
   const jobMap = useRef<Record<string, string>>({});
+
+  const { startUpload } = useUploadThing("imageUploader", {
+    onUploadProgress: (progress) => {
+      setUploadProgress(progress);
+    },
+    uploadProgressGranularity: "coarse",
+  });
 
   const [processedImages, setProcessedImages] = useState<
     { src: string; originalName: string }[]
@@ -51,65 +57,19 @@ export default function App() {
     setUploadProgress(0);
 
     try {
-      const totalFiles = files.length;
-      const fileProgress: Record<number, number> = {};
+      const results = await Promise.all(
+        files.map(async (file) => {
+          const jobId = crypto.randomUUID();
+          const res = await startUpload([file], { jobId });
+          if (!res || !res[0]) throw new Error("Upload failed");
 
-      files.forEach((_, index) => {
-        fileProgress[index] = 0;
-      });
-
-      const updateOverallProgress = () => {
-        const totalProgress = Object.values(fileProgress).reduce(
-          (sum, p) => sum + p,
-          0
-        );
-        const overallProgress = Math.round(totalProgress / totalFiles);
-        setUploadProgress(overallProgress);
-      };
-
-      const uploadPromises = files.map(async (file, index) => {
-        const jobId = crypto.randomUUID();
-        const pathname = `${jobId}-${file.name}`;
-
-        const progressInterval = setInterval(() => {
-          const currentProgress = fileProgress[index] ?? 0;
-          if (currentProgress < 90) {
-            fileProgress[index] = Math.min(currentProgress + 10, 90);
-            updateOverallProgress();
-          }
-        }, 200);
-
-        try {
-          const blob = await upload(pathname, file, {
-            access: "public",
-            handleUploadUrl: "/api/upload",
-          });
-
-          clearInterval(progressInterval);
-          fileProgress[index] = 100;
-          updateOverallProgress();
-
-          return {
-            name: file.name,
-            jobId: jobId,
-            sourceUrl: blob.url,
-          };
-        } catch (error) {
-          clearInterval(progressInterval);
-          throw error;
-        }
-      });
-
-      const results = await Promise.all(uploadPromises);
+          jobMap.current[jobId] = file.name;
+          return { jobId, url: res[0].ufsUrl };
+        })
+      );
 
       setUploadProgress(100);
-
-      const jobIds: string[] = [];
-
-      results.forEach((result) => {
-        jobIds.push(result.jobId);
-        jobMap.current[result.jobId] = result.name;
-      });
+      const jobIds = results.map((r) => r.jobId);
 
       setProcessingState("queued");
       startPollingMultipleJobs(jobIds);
