@@ -8,9 +8,15 @@
   <b>Backgrounds, Gone.</b>
 </p>
 
+<p align="center">
+  <a href="https://nobg.itskdhere.com" title="nobg.itskdhere.com">
+    <img alt="nobg.itskdhere.com" src="https://img.shields.io/badge/nobg.itskdhere.com-505050?style=for-the-badge&logoColor=white">
+  </a>
+</p>
+
 ## 🔎 Overview
 
-NoBG is an open-source, full-stack application designed to automatically remove backgrounds from images. Built with a Next.js frontend and a fast Python worker, NoBG orchestrates image processing jobs using Redis and Vercel Blob storage via an event-driven, decoupled architecture utilizing message queues.
+NoBG is an open-source, full-stack application designed to automatically remove backgrounds from images. Built with a Next.js frontend and a fast Python worker, NoBG orchestrates image processing jobs using Redis and UploadThing via an event-driven, decoupled architecture utilizing message queues.
 
 ## ✨ Features
 
@@ -19,7 +25,7 @@ NoBG is an open-source, full-stack application designed to automatically remove 
 - **Authentication**: Built-in credential and OAuth flow using Better Auth.
 - **Database**: PostgreSQL with Prisma ORM for type-safe database access.
 - **Job Queuing**: Redis is used for fast, reliable job queues between the web frontend and worker.
-- **Cloud Storage**: Integrated with Vercel Blob for secure image upload and hosting.
+- **Cloud Storage**: Integrated with UploadThing for secure image upload and hosting.
 - **Monorepo Structure**: Managed with `pnpm` workspace and Turborepo for optimal local development.
 
 ## 🛠️ Tech Stack
@@ -30,10 +36,10 @@ NoBG is an open-source, full-stack application designed to automatically remove 
 - Next.js
 - Tailwind CSS
 - Shared UI Components (`packages/ui`)
-- Prisma ORM
 - Better Auth
+- Prisma ORM
 - Redis Client
-- Vercel Blob
+- UploadThing
 
 ### Background Processing (`apps/worker`)
 
@@ -50,7 +56,7 @@ NoBG is an open-source, full-stack application designed to automatically remove 
 .
 ├── apps/
 │   ├── web/                     # Next.js frontend and API routes
-│   └── worker/                  # Python FastAPI worker for background removal
+│   └── worker/                  # Python worker for background removal
 ├── packages/
 │   ├── ui/                      # Shared React UI components
 │   ├── eslint-config/           # Shared ESLint configurations
