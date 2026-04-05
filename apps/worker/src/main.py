@@ -6,10 +6,13 @@ import logging
 import threading
 import requests
 import redis
+from dotenv import load_dotenv
 from PIL import Image
 from rembg import remove, new_session
 from fastapi import FastAPI
 from .config import MODEL_NAME, PREFIX
+
+load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

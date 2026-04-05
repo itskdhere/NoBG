@@ -3,9 +3,11 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "setup": "docker compose build",
-    "dev": "docker compose up",
-    "start": "docker compose up -d",
-    "stop": "docker compose down"
+    "dev": "pnpm dev:windows",
+    "dev:windows": ".venv\\Scripts\\activate && uvicorn src.main:app --reload --host 0.0.0.0 --port 8000",
+    "dev:linux": "source .venv/bin/activate && uvicorn src.main:app --reload --host 0.0.0.0 --port 8000",
+    "start": "uvicorn src.main:app --host 0.0.0.0 --port 8000",
+    "up": "docker compose up --build -d",
+    "down": "docker compose down -v"
   }
 }

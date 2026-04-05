@@ -5,3 +5,4 @@ pillow
 redis
 requests
 python-multipart
+python-dotenv
