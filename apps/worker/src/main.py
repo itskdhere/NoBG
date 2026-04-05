@@ -15,46 +15,44 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 REDIS_URL = os.getenv("REDIS_URL")
-BLOB_READ_WRITE_TOKEN = os.getenv("BLOB_READ_WRITE_TOKEN")
+WEB_APP_URL = os.getenv("WEB_APP_URL")
 
 if not REDIS_URL:
-    logger.warning("REDIS_URL is not set. Worker will fail to connect.")
+    logger.error("REDIS_URL is not set. Worker will fail to start.")
+    exit(1)
 
-if not BLOB_READ_WRITE_TOKEN:
-    logger.warning("BLOB_READ_WRITE_TOKEN is not set. Worker will fail to upload.")
+if not WEB_APP_URL:
+    logger.error("WEB_APP_URL is not set. Worker will fail to upload.")
+    exit(1)
+
+WORKER_SECRET = os.getenv("WORKER_SECRET")
 
 r = redis.Redis.from_url(REDIS_URL, decode_responses=True)
 
 session = new_session(MODEL_NAME)
 
-app = FastAPI(title="NoBG Worker API")
+app = FastAPI(title="NoBG Worker")
 
 
-def upload_to_vercel_blob(image_bytes: bytes, filename: str) -> str:
-    token = os.getenv("BLOB_READ_WRITE_TOKEN")
-    if not token:
-        raise ValueError("BLOB_READ_WRITE_TOKEN environment variable is missing.")
+def upload_to_uploadthing(image_bytes: bytes, filename: str) -> str:
+    url = f"{WEB_APP_URL}/api/worker/upload"
+    
+    files = {"file": (filename, image_bytes, "image/png")}
+    headers = {"Authorization": f"Bearer {WORKER_SECRET}"} if WORKER_SECRET else {}
+    
+    response = requests.post(url, files=files, headers=headers)
 
-    url = f"https://blob.vercel-storage.com/{filename}"
-
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "X-Content-Type": "image/png",
-    }
-
-    response = requests.put(url, headers=headers, data=image_bytes)
-
-    if response.status_code not in (200, 201):
-        logger.error(f"Vercel Blob API error: {response.status_code} - {response.text}")
+    if response.status_code != 200:
+        logger.error(f"Worker Upload API error: {response.status_code} - {response.text}")
         response.raise_for_status()
 
     data = response.json()
     blob_url = data.get("url")
 
     if not blob_url:
-        raise ValueError("Vercel Blob API did not return a URL")
+        raise ValueError("Worker Upload API did not return a URL")
 
-    logger.info(f"Successfully uploaded to Vercel Blob: {blob_url}")
+    logger.info(f"Successfully uploaded to Uploadthing: {blob_url}")
     return blob_url
 
 
@@ -86,7 +84,7 @@ def process_job(job_data_str: str):
         else:
             filename = f"{original_filename}-nobg.png"
 
-        result_url = upload_to_vercel_blob(img_bytes, filename)
+        result_url = upload_to_uploadthing(img_bytes, filename)
 
         r.hset(
             f"{PREFIX}:job_status:{job_id}",
