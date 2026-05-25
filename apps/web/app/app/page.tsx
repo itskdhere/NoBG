@@ -278,17 +278,33 @@ export default function App() {
                     />
 
                     <div className="flex flex-col justify-center items-center w-full">
-                      <Button size="default" variant="default" asChild>
-                        <a
-                          href={src}
-                          download={`${originalName.replace(
-                            /\.[^/.]+$/,
-                            ""
-                          )}-nobg.png`}
-                        >
-                          <Download size={18} />
-                          <span>Download</span>
-                        </a>
+                      <Button
+                        size="default"
+                        variant="default"
+                        className="cursor-pointer"
+                        onClick={async () => {
+                          try {
+                            const response = await fetch(src);
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const link = document.createElement("a");
+                            link.href = url;
+                            link.download = `${originalName.replace(
+                              /\.[^/.]+$/,
+                              ""
+                            )}-nobg.png`;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            window.URL.revokeObjectURL(url);
+                          } catch (error) {
+                            console.error("Failed to download image", error);
+                            window.open(src, "_blank");
+                          }
+                        }}
+                      >
+                        <Download size={18} />
+                        <span>Download</span>
                       </Button>
                     </div>
                   </div>
