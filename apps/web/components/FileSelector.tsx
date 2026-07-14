@@ -15,11 +15,11 @@ import { State } from "@/app/app/page";
 
 export default function FileSelector({
   className,
-  filesList,
+  filesListRef,
   setState,
 }: {
   className?: string;
-  filesList: {
+  filesListRef: {
     current: File[];
   };
   setState: (value: State) => void;
@@ -44,10 +44,10 @@ export default function FileSelector({
   });
 
   useEffect(() => {
-    filesList.current = files.map((f) =>
+    filesListRef.current = files.map((f) =>
       f.file instanceof File ? f.file : new File([], f.file.name)
     );
-  }, [files, filesList]);
+  }, [files, filesListRef]);
 
   const handleContinue = () => {
     setState("processing");
@@ -112,6 +112,7 @@ export default function FileSelector({
               <div className="flex items-center gap-3 overflow-hidden">
                 <div className="flex aspect-square size-12 shrink-0 items-center justify-center rounded border">
                   {file.file instanceof File ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={URL.createObjectURL(file.file)}
                       alt={file.file.name}

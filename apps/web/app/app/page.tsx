@@ -36,7 +36,7 @@ export default function App() {
   >(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
-  const filesList = useRef<File[]>([]);
+  const filesListRef = useRef<File[]>([]);
   const jobMap = useRef<Record<string, string>>({});
 
   const { startUpload } = useUploadThing("imageUploader", {
@@ -162,7 +162,7 @@ export default function App() {
     if (state === "processing" && !isUploading && processingState === null) {
       const processFiles = async () => {
         try {
-          await uploadFiles(filesList.current);
+          await uploadFiles(filesListRef.current);
         } catch (error) {
           console.error(error);
           setState("error");
@@ -171,11 +171,13 @@ export default function App() {
 
       processFiles();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, isUploading, processingState]);
 
   useEffect(() => {
+    const currentFiles = filesListRef.current;
     return () => {
-      filesList.current.forEach((file) => {
+      currentFiles.forEach((file) => {
         URL.revokeObjectURL(URL.createObjectURL(file));
       });
     };
@@ -215,7 +217,7 @@ export default function App() {
                 to get started.
               </p>
               <FileSelector
-                filesList={filesList}
+                filesListRef={filesListRef}
                 setState={setState}
                 className="w-full max-w-lg"
               />

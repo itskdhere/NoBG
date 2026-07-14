@@ -19,29 +19,20 @@ import GitHub from "@/assets/GitHub";
 export default function Auth({ type }: { type: "signin" | "signup" }) {
   const router = useRouter();
 
-  const { data: session, isPending, error } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
 
   const [stateGitHub, setStateGitHub] = useState<
     "loading" | "idle" | "processing" | "done" | "error"
   >("idle");
 
+  const buttonState = isPending ? "loading" : stateGitHub;
+
   useEffect(() => {
     if (session) {
       console.log("User session:", session);
       router.push("/app");
-    } else if (error) {
-      console.error("Authentication error:", error);
-      setStateGitHub("error");
     }
-  }, [session, error]);
-
-  useEffect(() => {
-    if (isPending) {
-      setStateGitHub("loading");
-    } else {
-      setStateGitHub("idle");
-    }
-  }, [isPending]);
+  }, [session, router]);
 
   async function handleGitHubAuth() {
     await authClient.signIn.social(
@@ -96,27 +87,27 @@ export default function Auth({ type }: { type: "signin" | "signup" }) {
             className="flex items-center justify-center gap-2 w-full cursor-pointer"
             onClick={handleGitHubAuth}
             disabled={
-              stateGitHub === "loading" ||
-              stateGitHub === "processing" ||
-              stateGitHub === "done"
+              buttonState === "loading" ||
+              buttonState === "processing" ||
+              buttonState === "done"
             }
           >
             <GitHub />
             <span>
-              {stateGitHub === "loading" && "Loading..."}
-              {stateGitHub === "idle" &&
+              {buttonState === "loading" && "Loading..."}
+              {buttonState === "idle" &&
                 (type === "signin"
                   ? "Sign In with GitHub"
                   : "Sign Up with GitHub")}
-              {stateGitHub === "processing" &&
+              {buttonState === "processing" &&
                 (type === "signin"
                   ? "Signing In with GitHub..."
                   : "Signing Up with GitHub...")}
-              {stateGitHub === "done" &&
+              {buttonState === "done" &&
                 (type === "signin"
                   ? "Sign In successful! Redirecting..."
                   : "Sign Up successful! Redirecting...")}
-              {stateGitHub === "error" &&
+              {buttonState === "error" &&
                 (type === "signin"
                   ? "Error signing In with GitHub"
                   : "Error signing Up with GitHub")}
@@ -127,7 +118,7 @@ export default function Auth({ type }: { type: "signin" | "signup" }) {
         <CardFooter>
           {type === "signin" ? (
             <p>
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link href="/signup" className="underline hover:cursor-pointer">
                 Sign Up
               </Link>

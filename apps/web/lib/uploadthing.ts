@@ -15,7 +15,7 @@ export const ourFileRouter = {
     },
   })
     .input(z.object({ jobId: z.string() }))
-    .middleware(async ({ req, input }) => {
+    .middleware(async ({ input }) => {
       const session = await auth.api.getSession({
         headers: await headers(),
       });
