@@ -21,7 +21,7 @@ NoBG is an open-source, full-stack application designed to automatically remove 
 ## ✨ Features
 
 - **Fast Background Removal**: Leveraging the Rembg library running on a dedicated FastAPI/Python worker.
-- **Modern Tech Stack**: Next.js App Router with React 19, Tailwind CSS, and Radix UI components.
+- **Modern Tech Stack**: Next.js App Router with React 19, Tailwind CSS, and Base UI components.
 - **Authentication**: Built-in credential and OAuth flow using Better Auth.
 - **Database**: PostgreSQL with Prisma ORM for type-safe database access.
 - **Job Queuing**: Redis is used for fast, reliable job queues between the web frontend and worker.

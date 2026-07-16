@@ -16,7 +16,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
-import { LoaderIcon, LogOutIcon, Settings, UserRound } from "lucide-react";
+import {
+  IconLoader,
+  IconLogout,
+  IconSettings,
+  IconUserCircle,
+} from "@tabler/icons-react";
 
 export function AvatarDropdown({
   session,
@@ -29,43 +34,47 @@ export function AvatarDropdown({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="rounded-full cursor-pointer"
-        >
-          <Avatar>
-            <AvatarImage src={session.user.image!} alt="shadcn" />
-            <AvatarFallback>
-              <LoaderIcon
-                role="status"
-                aria-label="Loading"
-                className="size-4 animate-spin"
-              />
-            </AvatarFallback>
-          </Avatar>
-        </Button>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full cursor-pointer"
+          />
+        }
+      >
+        <Avatar>
+          <AvatarImage src={session.user.image!} alt="shadcn" />
+          <AvatarFallback>
+            <IconLoader
+              role="status"
+              aria-label="Loading"
+              className="size-4 animate-spin"
+            />
+          </AvatarFallback>
+        </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-fit">
-        <DropdownMenuLabel>
-          <p className="text-md font-semibold">{session.user.name}</p>
-          <p className="text-md opacity-70">{session.user.email}</p>
-        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>
+            <p className="text-md font-semibold">{session.user.name}</p>
+            <p className="text-md opacity-70">{session.user.email}</p>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <UserRound />
+            <IconUserCircle />
             Account
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <Settings />
+            <IconSettings />
             Settings
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer" onSelect={handleSignOut}>
-          <LogOutIcon className="size-4" />
+        <DropdownMenuItem className="cursor-pointer" onClick={handleSignOut}>
+          <IconLogout className="size-4" />
           Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>

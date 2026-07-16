@@ -12,13 +12,13 @@ import { AvatarDropdown } from "@/components/AvatarDropdown";
 import { Button } from "@workspace/ui/components/button";
 import FileSelector from "@/components/FileSelector";
 import {
-  CloudUpload,
-  Ellipsis,
-  LoaderPinwheel,
-  Download,
-  OctagonAlert,
-  RefreshCcwDot,
-} from "lucide-react";
+  IconCloudUpload,
+  IconDots,
+  IconLoader,
+  IconCloudDownload,
+  IconAlertOctagon,
+  IconRefreshDot,
+} from "@tabler/icons-react";
 import { cn } from "@workspace/ui/lib/utils";
 
 export type State = "idle" | "processing" | "done" | "error";
@@ -227,13 +227,13 @@ export default function App() {
           {state === "processing" && (
             <div className="flex flex-col items-center gap-4">
               {processingState === "uploading" && (
-                <CloudUpload className="size-10 animate-bounce text-gray-800 dark:text-gray-200" />
+                <IconCloudUpload className="size-10 animate-bounce text-gray-800 dark:text-gray-200" />
               )}
               {processingState === "queued" && (
-                <Ellipsis className="size-10 animate-pulse text-gray-800 dark:text-gray-200" />
+                <IconDots className="size-10 animate-pulse text-gray-800 dark:text-gray-200" />
               )}
               {processingState === "removing-bg" && (
-                <LoaderPinwheel className="size-10 animate-spin text-gray-800 dark:text-gray-200" />
+                <IconLoader className="size-10 animate-spin text-gray-800 dark:text-gray-200" />
               )}
               <p className="text-lg font-medium">
                 {processingState === "uploading" &&
@@ -256,7 +256,7 @@ export default function App() {
                   setState("idle");
                 }}
               >
-                <RefreshCcwDot size={18} />
+                <IconRefreshDot size={18} />
                 Start Over
               </Button>
               <div
@@ -305,7 +305,7 @@ export default function App() {
                           }
                         }}
                       >
-                        <Download size={18} />
+                        <IconCloudDownload size={18} />
                         <span>Download</span>
                       </Button>
                     </div>
@@ -317,7 +317,7 @@ export default function App() {
 
           {state === "error" && (
             <div className="flex flex-col items-center gap-4">
-              <OctagonAlert className="size-10 text-red-600" />
+              <IconAlertOctagon className="size-10 text-red-600" />
               <p className="text-lg font-medium">
                 Oops! Something went wrong. Please try again.
               </p>

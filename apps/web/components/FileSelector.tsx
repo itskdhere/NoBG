@@ -5,12 +5,12 @@ import { formatBytes, useFileUpload } from "@/hooks/use-file-upload";
 import { Button } from "@workspace/ui/components/button";
 import { cn } from "@workspace/ui/lib/utils";
 import {
-  CircleAlert,
-  ImagePlus,
-  Trash2,
-  ArrowRight,
-  Image,
-} from "lucide-react";
+  IconAlertCircle,
+  IconPhotoPlus,
+  IconTrash,
+  IconArrowNarrowRight,
+  IconPhoto,
+} from "@tabler/icons-react";
 import { State } from "@/app/app/page";
 
 export default function FileSelector({
@@ -77,7 +77,7 @@ export default function FileSelector({
             className="mb-2 flex size-12 shrink-0 items-center justify-center rounded-full border bg-background"
             aria-hidden="true"
           >
-            <ImagePlus className="size-6 opacity-60" />
+            <IconPhotoPlus className="size-6 opacity-60" />
           </div>
           <p className="mb-1.5 text-lg font-medium">Add Image(s)</p>
           <p className="mb-2 text-muted-foreground">
@@ -96,7 +96,7 @@ export default function FileSelector({
           className="flex items-center gap-1 text-xs text-destructive"
           role="alert"
         >
-          <CircleAlert className="size-3 shrink-0" />
+          <IconAlertCircle className="size-3 shrink-0" />
           <span>{errors[0]}</span>
         </div>
       )}
@@ -119,7 +119,10 @@ export default function FileSelector({
                       className="h-full w-full rounded object-cover"
                     />
                   ) : (
-                    <Image className="size-5 opacity-70" aria-hidden="true" />
+                    <IconPhoto
+                      className="size-5 opacity-70"
+                      aria-hidden="true"
+                    />
                   )}
                 </div>
                 <div className="flex min-w-0 flex-col gap-0.5">
@@ -159,7 +162,7 @@ export default function FileSelector({
                 onClick={() => removeFile(file.id)}
                 aria-label="Remove file"
               >
-                <Trash2 className="size-4 text-red-400" aria-hidden="true" />
+                <IconTrash className="size-4 text-red-400" aria-hidden="true" />
               </Button>
             </div>
           ))}
@@ -173,7 +176,7 @@ export default function FileSelector({
                 className="leading-tight hover:cursor-pointer"
                 onClick={clearFiles}
               >
-                <Trash2 className="size-4" aria-hidden="true" />
+                <IconTrash className="size-4" aria-hidden="true" />
                 <span>Remove All</span>
               </Button>
 
@@ -184,7 +187,7 @@ export default function FileSelector({
                 onClick={handleContinue}
               >
                 <span>Continue</span>
-                <ArrowRight className="size-4" aria-hidden="true" />
+                <IconArrowNarrowRight className="size-4" aria-hidden="true" />
               </Button>
             </div>
           )}

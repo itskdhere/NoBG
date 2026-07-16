@@ -5,18 +5,18 @@ import { Button } from "@workspace/ui/components/button";
 import { AnimatedThemeToggler } from "@workspace/ui/components/animated-theme-toggler";
 import { InteractiveHoverButton } from "@workspace/ui/components/interactive-hover-button";
 import {
-  Github,
-  LoaderPinwheel,
-  Download,
-  Crosshair,
-  Sparkles,
-  ShieldCheck,
-  Upload,
-  ShoppingBag,
-  Megaphone,
-  UserCircle,
-  Palette,
-} from "lucide-react";
+  IconBrandGithub,
+  IconLoader,
+  IconDownload,
+  IconCrosshair,
+  IconSparkles,
+  IconShieldCheck,
+  IconUpload,
+  IconShoppingBag,
+  IconSpeakerphone,
+  IconUserCircle,
+  IconPalette,
+} from "@tabler/icons-react";
 
 export default function Landing() {
   return (
@@ -38,17 +38,19 @@ export default function Landing() {
                 variant="default"
                 size="default"
                 className="px-4 rounded-full cursor-pointer"
-                asChild
+                render={<Link href="/signup" />}
+                nativeButton={false}
               >
-                <Link href="/signup">Sign Up</Link>
+                Sign Up
               </Button>
               <Button
                 variant="secondary"
                 size="default"
                 className="px-4 rounded-full cursor-pointer"
-                asChild
+                render={<Link href="/signin" />}
+                nativeButton={false}
               >
-                <Link href="/signin">Sign In</Link>
+                Sign In
               </Button>
             </div>
           </div>
@@ -83,7 +85,7 @@ export default function Landing() {
           <h2 className="text-3xl font-bold mb-12">Features</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
             <div className="flex flex-col items-center text-center gap-3 p-6">
-              <Crosshair size={40} className="text-primary" />
+              <IconCrosshair size={40} className="text-primary" />
               <h3 className="text-xl font-semibold">Pixel Perfect Accuracy</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Powered by advanced AI that handles complex edges like hair and
@@ -91,7 +93,7 @@ export default function Landing() {
               </p>
             </div>
             <div className="flex flex-col items-center text-center gap-3 p-6">
-              <Sparkles size={40} className="text-primary" />
+              <IconSparkles size={40} className="text-primary" />
               <h3 className="text-xl font-semibold">100% Automatic</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 No manual tracing or lasso tools. Just upload and let the model
@@ -99,7 +101,7 @@ export default function Landing() {
               </p>
             </div>
             <div className="flex flex-col items-center text-center gap-3 p-6">
-              <ShieldCheck size={40} className="text-primary" />
+              <IconShieldCheck size={40} className="text-primary" />
               <h3 className="text-xl font-semibold">Privacy First</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Guest images are processed in RAM and deleted immediately. We
@@ -114,7 +116,7 @@ export default function Landing() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
             <div className="flex flex-col items-center text-center gap-3 p-6">
               <div className="flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 text-primary mb-2">
-                <Upload size={28} />
+                <IconUpload size={28} />
               </div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Step 1
@@ -126,7 +128,7 @@ export default function Landing() {
             </div>
             <div className="flex flex-col items-center text-center gap-3 p-6">
               <div className="flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 text-primary mb-2">
-                <LoaderPinwheel size={28} />
+                <IconLoader size={28} />
               </div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Step 2
@@ -139,7 +141,7 @@ export default function Landing() {
             </div>
             <div className="flex flex-col items-center text-center gap-3 p-6">
               <div className="flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 text-primary mb-2">
-                <Download size={28} />
+                <IconDownload size={28} />
               </div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Step 3
@@ -157,7 +159,7 @@ export default function Landing() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
             <div className="flex items-start gap-4 rounded-xl border p-6">
               <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary shrink-0">
-                <ShoppingBag size={24} />
+                <IconShoppingBag size={24} />
               </div>
               <div>
                 <h3 className="text-lg font-semibold mb-1">E-Commerce</h3>
@@ -168,7 +170,7 @@ export default function Landing() {
             </div>
             <div className="flex items-start gap-4 rounded-xl border p-6">
               <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary shrink-0">
-                <Megaphone size={24} />
+                <IconSpeakerphone size={24} />
               </div>
               <div>
                 <h3 className="text-lg font-semibold mb-1">Marketing</h3>
@@ -179,7 +181,7 @@ export default function Landing() {
             </div>
             <div className="flex items-start gap-4 rounded-xl border p-6">
               <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary shrink-0">
-                <UserCircle size={24} />
+                <IconUserCircle size={24} />
               </div>
               <div>
                 <h3 className="text-lg font-semibold mb-1">Profile Pics</h3>
@@ -190,7 +192,7 @@ export default function Landing() {
             </div>
             <div className="flex items-start gap-4 rounded-xl border p-6">
               <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary shrink-0">
-                <Palette size={24} />
+                <IconPalette size={24} />
               </div>
               <div>
                 <h3 className="text-lg font-semibold mb-1">Designers</h3>
@@ -237,7 +239,7 @@ export default function Landing() {
             rel="noopener noreferrer"
             className="flex justify-center items-center gap-1 underline"
           >
-            <Github className="size-3.5" />
+            <IconBrandGithub className="size-3.5" />
             <span>itskdhere/NoBG</span>
           </Link>
         </div>
