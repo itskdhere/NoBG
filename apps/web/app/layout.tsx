@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { Geist_Mono, IBM_Plex_Sans, Oxanium } from "next/font/google";
 import { Providers } from "@/components/providers";
 import "@workspace/ui/globals.css";
-import { cn } from "@workspace/ui/lib/utils";
 
 const oxaniumHeading = Oxanium({
   subsets: ["latin"],
