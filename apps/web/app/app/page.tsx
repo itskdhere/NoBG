@@ -38,6 +38,9 @@ export default function App() {
   const [isUploading, setIsUploading] = useState(false);
   const filesListRef = useRef<File[]>([]);
   const jobMap = useRef<Record<string, string>>({});
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null
+  );
 
   const { startUpload } = useUploadThing("imageUploader", {
     onUploadProgress: (progress) => {
@@ -120,13 +123,16 @@ export default function App() {
         }
 
         if (finished.length > 0) {
-          setProcessedImages((prev) => [
-            ...prev,
-            ...finished.map((f) => ({
-              src: f.result_url,
-              originalName: jobMap.current[f.id] || "image.png",
-            })),
-          ]);
+          setProcessedImages((prev) => {
+            const existingSrcs = new Set(prev.map((p) => p.src));
+            const newImages = finished
+              .filter((f) => !existingSrcs.has(f.result_url))
+              .map((f) => ({
+                src: f.result_url,
+                originalName: jobMap.current[f.id] || "image.png",
+              }));
+            return [...prev, ...newImages];
+          });
 
           const finishedIds = finished.map((f) => f.id);
           pendingJobIds = pendingJobIds.filter(
@@ -144,6 +150,7 @@ export default function App() {
         setState("error");
       }
     }, 2000);
+    pollingIntervalRef.current = interval;
   };
 
   useEffect(() => {
@@ -175,11 +182,11 @@ export default function App() {
   }, [state, isUploading, processingState]);
 
   useEffect(() => {
-    const currentFiles = filesListRef.current;
     return () => {
-      currentFiles.forEach((file) => {
-        URL.revokeObjectURL(URL.createObjectURL(file));
-      });
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
     };
   }, []);
 
@@ -267,15 +274,15 @@ export default function App() {
                     : "grid-cols-1 md:grid-cols-2"
                 )}
               >
-                {processedImages.map(({ src, originalName }, index) => (
+                {processedImages.map(({ src, originalName }) => (
                   <div
-                    key={index}
+                    key={src}
                     className="flex flex-col justify-between items-center gap-4 border rounded-lg p-2"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={src}
-                      alt={`Processed ${index}`}
+                      alt={originalName}
                       className="h-auto w-full max-w-xs object-contain"
                     />
 

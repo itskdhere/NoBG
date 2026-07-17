@@ -114,7 +114,7 @@ export default function FileSelector({
                   {file.file instanceof File ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={URL.createObjectURL(file.file)}
+                      src={file.preview}
                       alt={file.file.name}
                       className="h-full w-full rounded object-cover"
                     />
@@ -127,18 +127,10 @@ export default function FileSelector({
                 </div>
                 <div className="flex min-w-0 flex-col gap-0.5">
                   <p className="truncate text-sm font-medium">
-                    {file.file instanceof File
-                      ? file.file.name
-                      : file.file.name}
+                    {file.file.name}
                   </p>
                   <div className="flex flex-wrap justify-start gap-1 text-xs text-muted-foreground">
-                    <span>
-                      {formatBytes(
-                        file.file instanceof File
-                          ? file.file.size
-                          : file.file.size
-                      )}
-                    </span>
+                    <span>{formatBytes(file.file.size)}</span>
                     <span> • </span>
                     <span>
                       {file.file instanceof File
