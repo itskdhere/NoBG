@@ -44,7 +44,10 @@ export function AvatarDropdown({
         }
       >
         <Avatar>
-          <AvatarImage src={session.user.image!} alt="shadcn" />
+          <AvatarImage
+            src={session.user.image ?? undefined}
+            alt={session.user.name}
+          />
           <AvatarFallback>
             <IconLoader
               role="status"
