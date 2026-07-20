@@ -28,7 +28,7 @@ ARG MODEL_NAME=u2net
 
 ENV MODEL_NAME=${MODEL_NAME}
 
-RUN python src/download_model.py
+RUN python -m src.download_model
 
 COPY --chown=user . $HOME/app
 
