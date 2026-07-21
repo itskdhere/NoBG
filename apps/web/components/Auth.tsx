@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
+import Google from "@/assets/Google";
 import GitHub from "@/assets/GitHub";
 
 export default function Auth({ type }: { type: "signin" | "signup" }) {
@@ -21,11 +22,22 @@ export default function Auth({ type }: { type: "signin" | "signup" }) {
 
   const { data: session, isPending } = authClient.useSession();
 
+  const [stateGoogle, setStateGoogle] = useState<
+    "loading" | "idle" | "processing" | "done" | "error"
+  >("idle");
   const [stateGitHub, setStateGitHub] = useState<
     "loading" | "idle" | "processing" | "done" | "error"
   >("idle");
 
-  const buttonState = isPending ? "loading" : stateGitHub;
+  const buttonStateGoogle = isPending ? "loading" : stateGoogle;
+  const buttonStateGitHub = isPending ? "loading" : stateGitHub;
+
+  const isAnyLoading =
+    isPending ||
+    stateGitHub === "processing" ||
+    stateGitHub === "done" ||
+    stateGoogle === "processing" ||
+    stateGoogle === "done";
 
   useEffect(() => {
     if (session) {
@@ -33,6 +45,27 @@ export default function Auth({ type }: { type: "signin" | "signup" }) {
       router.push("/app");
     }
   }, [session, router]);
+
+  async function handleGoogleAuth() {
+    await authClient.signIn.social(
+      {
+        provider: "google",
+        callbackURL: "/app",
+      },
+      {
+        onRequest() {
+          setStateGoogle("processing");
+        },
+        onSuccess() {
+          setStateGoogle("done");
+        },
+        onError(err) {
+          console.error("Google authentication error:", err);
+          setStateGoogle("error");
+        },
+      }
+    );
+  }
 
   async function handleGitHubAuth() {
     await authClient.signIn.social(
@@ -74,8 +107,8 @@ export default function Auth({ type }: { type: "signin" | "signup" }) {
           </CardTitle>
           <CardDescription>
             {type === "signin"
-              ? "Welcome back! Please enter your credentials to access your account."
-              : "Join us today! Create an account to get started."}
+              ? "Welcome back! Please choose a provider to access your account."
+              : "Join us today! Choose a provider to get started."}
           </CardDescription>
         </CardHeader>
 
@@ -85,29 +118,55 @@ export default function Auth({ type }: { type: "signin" | "signup" }) {
             variant="outline"
             size="lg"
             className="flex items-center justify-center gap-2 w-full cursor-pointer"
-            onClick={handleGitHubAuth}
-            disabled={
-              buttonState === "loading" ||
-              buttonState === "processing" ||
-              buttonState === "done"
-            }
+            onClick={handleGoogleAuth}
+            disabled={isAnyLoading}
           >
-            <GitHub />
+            <Google />
             <span>
-              {buttonState === "loading" && "Loading..."}
-              {buttonState === "idle" &&
+              {buttonStateGoogle === "loading" && "Loading..."}
+              {buttonStateGoogle === "idle" &&
                 (type === "signin"
-                  ? "Sign In with GitHub"
-                  : "Sign Up with GitHub")}
-              {buttonState === "processing" &&
+                  ? "Sign In with Google"
+                  : "Sign Up with Google")}
+              {buttonStateGoogle === "processing" &&
                 (type === "signin"
-                  ? "Signing In with GitHub..."
-                  : "Signing Up with GitHub...")}
-              {buttonState === "done" &&
+                  ? "Signing In with Google..."
+                  : "Signing Up with Google...")}
+              {buttonStateGoogle === "done" &&
                 (type === "signin"
                   ? "Sign In successful! Redirecting..."
                   : "Sign Up successful! Redirecting...")}
-              {buttonState === "error" &&
+              {buttonStateGoogle === "error" &&
+                (type === "signin"
+                  ? "Error signing In with Google"
+                  : "Error signing Up with Google")}
+            </span>
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className="flex items-center justify-center gap-2 w-full cursor-pointer"
+            onClick={handleGitHubAuth}
+            disabled={isAnyLoading}
+          >
+            <GitHub />
+            <span>
+              {buttonStateGitHub === "loading" && "Loading..."}
+              {buttonStateGitHub === "idle" &&
+                (type === "signin"
+                  ? "Sign In with GitHub"
+                  : "Sign Up with GitHub")}
+              {buttonStateGitHub === "processing" &&
+                (type === "signin"
+                  ? "Signing In with GitHub..."
+                  : "Signing Up with GitHub...")}
+              {buttonStateGitHub === "done" &&
+                (type === "signin"
+                  ? "Sign In successful! Redirecting..."
+                  : "Sign Up successful! Redirecting...")}
+              {buttonStateGitHub === "error" &&
                 (type === "signin"
                   ? "Error signing In with GitHub"
                   : "Error signing Up with GitHub")}
