@@ -1,14 +1,16 @@
 import os
 import io
 import json
-import time
 import logging
-import threading
-import requests
-import redis
-from dotenv import load_dotenv
+import asyncio
+import functools
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import asynccontextmanager
 from PIL import Image
 from rembg import remove, new_session
+import redis.asyncio as aioredis
+import httpx
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from .config import MODEL_NAME, PREFIX
 
@@ -30,20 +32,27 @@ if not WEB_APP_URL:
 
 WORKER_SECRET = os.getenv("WORKER_SECRET")
 
-r = redis.Redis.from_url(REDIS_URL, decode_responses=True)
+# Connect to Redis using the async engine
+r = aioredis.from_url(REDIS_URL, decode_responses=True)
 
 session = new_session(MODEL_NAME)
 
-app = FastAPI(title="NoBG Worker")
+# --- Concurrency Semaphores ---
+# Limit parallel model inferences to 1 since HuggingFace Space Free Tier has 2 vCPUs
+cpu_semaphore = asyncio.Semaphore(1)
+cpu_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="cpu_worker")
+
+# Limit concurrent active network tasks (downloads/uploads) to 5
+network_semaphore = asyncio.Semaphore(5)
 
 
-def upload_to_uploadthing(image_bytes: bytes, filename: str) -> str:
+async def upload_to_uploadthing(client: httpx.AsyncClient, image_bytes: bytes, filename: str) -> str:
     url = f"{WEB_APP_URL}/api/worker/upload"
     
     files = {"file": (filename, image_bytes, "image/png")}
     headers = {"Authorization": f"Bearer {WORKER_SECRET}"} if WORKER_SECRET else {}
     
-    response = requests.post(url, files=files, headers=headers)
+    response = await client.post(url, files=files, headers=headers, timeout=60.0)
 
     if response.status_code != 200:
         logger.error(f"Worker Upload API error: {response.status_code} - {response.text}")
@@ -59,7 +68,8 @@ def upload_to_uploadthing(image_bytes: bytes, filename: str) -> str:
     return blob_url
 
 
-def process_job(job_data_str: str):
+async def process_job(job_data_str: str):
+    job_id = None
     try:
         job = json.loads(job_data_str)
         job_id = job["id"]
@@ -68,59 +78,101 @@ def process_job(job_data_str: str):
 
         logger.info(f"Processing job {job_id} from {source_url}")
 
-        response = requests.get(source_url)
-        response.raise_for_status()
+        async with httpx.AsyncClient() as client:
+            response = await client.get(source_url, timeout=30.0)
+            response.raise_for_status()
 
-        r.hset(f"{PREFIX}:job_status:{job_id}", mapping={"status": "processing"})
+            await r.hset(f"{PREFIX}:job_status:{job_id}", mapping={"status": "processing"})
 
-        input_image = Image.open(io.BytesIO(response.content))
-        output_image = remove(input_image, session=session)
+            # Offload CPU-bound ML and Pillow image tasks to the ThreadPoolExecutor
+            loop = asyncio.get_running_loop()
+            async with cpu_semaphore:
+                input_image = await loop.run_in_executor(
+                    cpu_executor, Image.open, io.BytesIO(response.content)
+                )
+                output_image = await loop.run_in_executor(
+                    cpu_executor, functools.partial(remove, session=session), input_image
+                )
+                img_byte_arr = io.BytesIO()
+                await loop.run_in_executor(
+                    cpu_executor, output_image.save, img_byte_arr, "PNG"
+                )
+                img_bytes = img_byte_arr.getvalue()
 
-        img_byte_arr = io.BytesIO()
-        output_image.save(img_byte_arr, format="PNG")
-        img_bytes = img_byte_arr.getvalue()
+            name_parts = original_filename.rsplit(".", 1)
+            if len(name_parts) == 2:
+                base_name, ext = name_parts
+                filename = f"{base_name}-nobg.{ext}"
+            else:
+                filename = f"{original_filename}-nobg.png"
 
-        name_parts = original_filename.rsplit(".", 1)
-        if len(name_parts) == 2:
-            base_name, ext = name_parts
-            filename = f"{base_name}-nobg.{ext}"
-        else:
-            filename = f"{original_filename}-nobg.png"
+            result_url = await upload_to_uploadthing(client, img_bytes, filename)
 
-        result_url = upload_to_uploadthing(img_bytes, filename)
+            await r.hset(
+                f"{PREFIX}:job_status:{job_id}",
+                mapping={"status": "completed", "result_url": result_url},
+            )
+            await r.expire(f"{PREFIX}:job_status:{job_id}", 3600)
 
-        r.hset(
-            f"{PREFIX}:job_status:{job_id}",
-            mapping={"status": "completed", "result_url": result_url},
-        )
-        r.expire(f"{PREFIX}:job_status:{job_id}", 3600)
-
-        logger.info(f"Job {job_id} completed successfully. URL: {result_url}")
+            logger.info(f"Job {job_id} completed successfully. URL: {result_url}")
 
     except Exception as e:
         logger.error(f"Error processing job: {str(e)}")
-        if "job_id" in locals():
-            r.hset(f"{PREFIX}:job_status:{job_id}", mapping={"status": "failed"})
-            r.expire(f"{PREFIX}:job_status:{job_id}", 3600)
+        if job_id:
+            try:
+                await r.hset(f"{PREFIX}:job_status:{job_id}", mapping={"status": "failed"})
+                await r.expire(f"{PREFIX}:job_status:{job_id}", 3600)
+            except Exception as redis_err:
+                logger.error(f"Failed to update failed status in Redis: {str(redis_err)}")
 
 
-def worker_loop():
+async def worker_loop():
     logger.info(f"Starting Redis worker loop... Listening on queue: {PREFIX}:job_queue")
     while True:
         try:
-            result = r.brpop(f"{PREFIX}:job_queue", timeout=0)
-            if result:
-                _, job_data_str = result
-                process_job(job_data_str)
+            # Wait for permit before popping a job
+            await network_semaphore.acquire()
+            
+            try:
+                result = await r.brpop(f"{PREFIX}:job_queue", timeout=5)
+                if result:
+                    _, job_data_str = result
+                    
+                    async def run_and_release():
+                        try:
+                            await process_job(job_data_str)
+                        finally:
+                            network_semaphore.release()
+                            
+                    asyncio.create_task(run_and_release())
+                else:
+                    network_semaphore.release()
+                    await asyncio.sleep(0.1)
+            except Exception as inner_e:
+                network_semaphore.release()
+                raise inner_e
+                
+        except asyncio.CancelledError:
+            logger.info("Worker loop cancelled.")
+            break
         except Exception as e:
             logger.error(f"Redis connection/worker loop error: {str(e)}")
-            time.sleep(5)
+            await asyncio.sleep(5)
 
 
-@app.on_event("startup")
-def startup_event():
-    thread = threading.Thread(target=worker_loop, daemon=True)
-    thread.start()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    worker_task = asyncio.create_task(worker_loop())
+    yield
+    worker_task.cancel()
+    try:
+        await worker_task
+    except asyncio.CancelledError:
+        pass
+    cpu_executor.shutdown(wait=True)
+
+
+app = FastAPI(title="NoBG Worker", lifespan=lifespan)
 
 
 @app.get("/")
