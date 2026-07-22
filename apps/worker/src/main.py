@@ -32,12 +32,18 @@ if not WEB_APP_URL:
 
 WORKER_SECRET = os.getenv("WORKER_SECRET")
 
-# Connect to Redis using the async engine
-r = aioredis.from_url(REDIS_URL, decode_responses=True)
+r = aioredis.from_url(
+    REDIS_URL,
+    decode_responses=True,
+    socket_timeout=15.0,
+    socket_connect_timeout=10.0,
+    socket_keepalive=True,
+    health_check_interval=15,
+    retry_on_timeout=True,
+)
 
 session = new_session(MODEL_NAME)
 
-# --- Concurrency Semaphores ---
 # Limit parallel model inferences to 1 since HuggingFace Space Free Tier has 2 vCPUs
 cpu_semaphore = asyncio.Semaphore(1)
 cpu_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="cpu_worker")
@@ -84,7 +90,6 @@ async def process_job(job_data_str: str):
 
             await r.hset(f"{PREFIX}:job_status:{job_id}", mapping={"status": "processing"})
 
-            # Offload CPU-bound ML and Pillow image tasks to the ThreadPoolExecutor
             loop = asyncio.get_running_loop()
             async with cpu_semaphore:
                 input_image = await loop.run_in_executor(
@@ -130,9 +135,7 @@ async def worker_loop():
     logger.info(f"Starting Redis worker loop... Listening on queue: {PREFIX}:job_queue")
     while True:
         try:
-            # Wait for permit before popping a job
             await network_semaphore.acquire()
-            
             try:
                 result = await r.brpop(f"{PREFIX}:job_queue", timeout=5)
                 if result:
@@ -155,6 +158,9 @@ async def worker_loop():
         except asyncio.CancelledError:
             logger.info("Worker loop cancelled.")
             break
+        except (aioredis.TimeoutError, aioredis.ConnectionError, asyncio.TimeoutError) as te:
+            logger.warning(f"Redis connection timeout/reset (reconnecting...): {str(te)}")
+            await asyncio.sleep(2)
         except Exception as e:
             logger.error(f"Redis connection/worker loop error: {str(e)}")
             await asyncio.sleep(5)
