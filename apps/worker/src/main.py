@@ -44,11 +44,9 @@ r = aioredis.from_url(
 
 session = new_session(MODEL_NAME)
 
-# Limit parallel model inferences to 1 since HuggingFace Space Free Tier has 2 vCPUs
 cpu_semaphore = asyncio.Semaphore(1)
 cpu_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="cpu_worker")
 
-# Limit concurrent active network tasks (downloads/uploads) to 5
 network_semaphore = asyncio.Semaphore(5)
 
 
@@ -115,7 +113,12 @@ async def process_job(job_data_str: str):
 
             await r.hset(
                 f"{PREFIX}:job_status:{job_id}",
-                mapping={"status": "completed", "result_url": result_url},
+                mapping={
+                    "status": "completed",
+                    "result_url": result_url,
+                    "sourceUrl": source_url,
+                    "filename": original_filename,
+                },
             )
             await r.expire(f"{PREFIX}:job_status:{job_id}", 3600)
 

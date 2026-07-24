@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { redis, PREFIX } from "@/lib/redis";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 
 export async function GET(request: Request) {
@@ -33,8 +34,34 @@ export async function GET(request: Request) {
     }
 
     if (statusData.userId !== session.user.id) {
-      console.log(`[Status] Unauthorized access to job: ${jobId} by user: ${session.user.id}`);
+      console.log(
+        `[Status] Unauthorized access to job: ${jobId} by user: ${session.user.id}`
+      );
       return NextResponse.json({ error: "Job not found" }, { status: 404 });
+    }
+
+    if (
+      statusData.status === "completed" &&
+      statusData.result_url &&
+      statusData.savedToDb !== "true"
+    ) {
+      try {
+        await prisma.processedImage.create({
+          data: {
+            userId: session.user.id,
+            originalName: statusData.filename || "image.png",
+            sourceUrl: statusData.sourceUrl || "",
+            resultUrl: statusData.result_url,
+          },
+        });
+        await redis.hSet(key, "savedToDb", "true");
+        statusData.savedToDb = "true";
+      } catch (dbError) {
+        console.error(
+          "[Status] Failed to persist processed image to database:",
+          dbError
+        );
+      }
     }
 
     return NextResponse.json(statusData, { status: 200 });

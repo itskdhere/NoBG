@@ -44,6 +44,9 @@ export const ourFileRouter = {
 
         await redis.hSet(`${PREFIX}:job_status:${jobId}`, {
           status: "pending",
+          userId: userId,
+          sourceUrl: file.ufsUrl,
+          filename: filename,
         });
         await redis.lPush(`${PREFIX}:job_queue`, jobData);
 
