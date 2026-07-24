@@ -17,9 +17,23 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  processedImages ProcessedImage[]
 
   @@unique([email])
   @@map("user")
+}
+
+model ProcessedImage {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  originalName String
+  sourceUrl    String
+  resultUrl    String
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@map("processed_image")
 }
 
 model Session {
