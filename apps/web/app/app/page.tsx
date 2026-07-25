@@ -394,7 +394,7 @@ export default function App() {
           <div className="flex items-center justify-between w-full mb-8">
             <div className="flex items-center gap-1.5">
               <IconHistory className="size-5 text-primary" />
-              <h2 className="text-xl">Previously Removed Photos</h2>
+              <h2 className="text-xl">Processed Images ({history.length})</h2>
             </div>
             {history.length > 0 && (
               <span className="text-sm text-muted-foreground">

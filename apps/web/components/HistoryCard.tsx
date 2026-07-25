@@ -32,7 +32,7 @@ export function HistoryCard({
 
   useEffect(() => {
     if (imgRef.current?.complete && imgRef.current.naturalWidth !== 0) {
-      setLoadedSrc(displaySrc);
+      setTimeout(() => setLoadedSrc(displaySrc), 0);
     }
   }, [displaySrc]);
 
@@ -77,11 +77,11 @@ export function HistoryCard({
       </div>
 
       <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-col gap-0.5 min-w-0">
           <p className="text-sm font-medium truncate" title={item.originalName}>
             {item.originalName}
           </p>
-          <span className="text-xs text-muted-foreground shrink-0">
+          <p className="text-xs text-muted-foreground">
             {new Date(item.createdAt).toLocaleString("en-GB", {
               day: "2-digit",
               month: "2-digit",
@@ -89,7 +89,7 @@ export function HistoryCard({
               hour: "2-digit",
               minute: "2-digit",
             })}
-          </span>
+          </p>
         </div>
 
         <div className="flex items-center gap-2 mt-2">
