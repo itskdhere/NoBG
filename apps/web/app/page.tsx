@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { authClient } from "@/lib/auth-client";
-import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { AnimatedThemeToggler } from "@workspace/ui/components/animated-theme-toggler";
 import { InteractiveHoverButton } from "@workspace/ui/components/interactive-hover-button";
@@ -39,39 +38,40 @@ export default function Landing() {
 
             <div className="flex justify-center items-center gap-4">
               <AnimatedThemeToggler className="hover:cursor-pointer" />
-              {!isPending &&
-                (session ? (
+              {isPending ? (
+                <div className="w-24 h-9 bg-muted/40 rounded-full animate-pulse" />
+              ) : session ? (
+                <Button
+                  variant="default"
+                  size="default"
+                  className="px-4 rounded-full cursor-pointer"
+                  render={<Link href="/app" />}
+                  nativeButton={false}
+                >
+                  Go to App
+                </Button>
+              ) : (
+                <>
                   <Button
                     variant="default"
                     size="default"
                     className="px-4 rounded-full cursor-pointer"
-                    render={<Link href="/app" />}
+                    render={<Link href="/signup" />}
                     nativeButton={false}
                   >
-                    Go to App
+                    Sign Up
                   </Button>
-                ) : (
-                  <>
-                    <Button
-                      variant="default"
-                      size="default"
-                      className="px-4 rounded-full cursor-pointer"
-                      render={<Link href="/signup" />}
-                      nativeButton={false}
-                    >
-                      Sign Up
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="default"
-                      className="px-4 rounded-full cursor-pointer"
-                      render={<Link href="/signin" />}
-                      nativeButton={false}
-                    >
-                      Sign In
-                    </Button>
-                  </>
-                ))}
+                  <Button
+                    variant="secondary"
+                    size="default"
+                    className="px-4 rounded-full cursor-pointer"
+                    render={<Link href="/signin" />}
+                    nativeButton={false}
+                  >
+                    Sign In
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -79,12 +79,6 @@ export default function Landing() {
 
       <main className="flex flex-col justify-center items-center">
         <section className="flex flex-col justify-center items-center h-screen w-full max-w-4xl py-14">
-          <Badge
-            variant="outline"
-            className="font-mono font-medium text-sm px-3 py-1 mt-6"
-          >
-            v1.0 Now Live
-          </Badge>
           <h2 className="text-3xl sm:text-6xl font-bold mt-4">
             <span>Backgrounds, </span>
             <span className="text-muted-foreground">Gone.</span>
