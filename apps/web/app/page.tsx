@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { authClient } from "@/lib/auth-client";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { AnimatedThemeToggler } from "@workspace/ui/components/animated-theme-toggler";
@@ -19,6 +22,8 @@ import {
 } from "@tabler/icons-react";
 
 export default function Landing() {
+  const { data: session, isPending } = authClient.useSession();
+
   return (
     <>
       <header className="absolute w-full px-6 md:px-10 py-2 md:py-4">
@@ -34,24 +39,39 @@ export default function Landing() {
 
             <div className="flex justify-center items-center gap-4">
               <AnimatedThemeToggler className="hover:cursor-pointer" />
-              <Button
-                variant="default"
-                size="default"
-                className="px-4 rounded-full cursor-pointer"
-                render={<Link href="/signup" />}
-                nativeButton={false}
-              >
-                Sign Up
-              </Button>
-              <Button
-                variant="secondary"
-                size="default"
-                className="px-4 rounded-full cursor-pointer"
-                render={<Link href="/signin" />}
-                nativeButton={false}
-              >
-                Sign In
-              </Button>
+              {!isPending &&
+                (session ? (
+                  <Button
+                    variant="default"
+                    size="default"
+                    className="px-4 rounded-full cursor-pointer"
+                    render={<Link href="/app" />}
+                    nativeButton={false}
+                  >
+                    Go to App
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      variant="default"
+                      size="default"
+                      className="px-4 rounded-full cursor-pointer"
+                      render={<Link href="/signup" />}
+                      nativeButton={false}
+                    >
+                      Sign Up
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="default"
+                      className="px-4 rounded-full cursor-pointer"
+                      render={<Link href="/signin" />}
+                      nativeButton={false}
+                    >
+                      Sign In
+                    </Button>
+                  </>
+                ))}
             </div>
           </div>
         </div>
@@ -74,9 +94,9 @@ export default function Landing() {
             in seconds. <br />
             No credit card required.
           </p>
-          <Link href="/signup">
+          <Link href={session ? "/app" : "/signup"}>
             <InteractiveHoverButton className="mt-10">
-              Get Started Free
+              {session ? "Go to App" : "Get Started Free"}
             </InteractiveHoverButton>
           </Link>
         </section>
@@ -211,9 +231,9 @@ export default function Landing() {
           <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
             No sign-up needed. Upload your first image and see the magic.
           </p>
-          <Link href="/signup">
+          <Link href={session ? "/app" : "/signup"}>
             <InteractiveHoverButton className="mt-10">
-              Get Started — It&apos;s Free
+              {session ? "Go to App" : "Get Started — It's Free"}
             </InteractiveHoverButton>
           </Link>
         </section>
