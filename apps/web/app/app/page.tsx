@@ -20,6 +20,7 @@ import {
   IconAlertOctagon,
   IconRefreshDot,
   IconHistory,
+  IconTrash,
 } from "@tabler/icons-react";
 import { cn } from "@workspace/ui/lib/utils";
 
@@ -65,6 +66,7 @@ export default function App() {
 
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
   const [showOriginalMap, setShowOriginalMap] = useState<
     Record<string, boolean>
   >({});
@@ -89,6 +91,18 @@ export default function App() {
       setHistory((prev) => prev.filter((item) => item.id !== id));
     } catch (error) {
       console.error("Failed to delete history item:", error);
+    }
+  };
+
+  const handleDeleteAllHistory = async () => {
+    setIsDeletingAll(true);
+    try {
+      await axios.delete("/api/history?all=true");
+      setHistory([]);
+    } catch (error) {
+      console.error("Failed to delete all history:", error);
+    } finally {
+      setIsDeletingAll(false);
     }
   };
 
@@ -397,10 +411,20 @@ export default function App() {
               <h2 className="text-xl">Processed Images ({history.length})</h2>
             </div>
             {history.length > 0 && (
-              <span className="text-sm text-muted-foreground">
-                {history.length} {history.length === 1 ? "photo" : "photos"}{" "}
-                saved
-              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={isDeletingAll}
+                onClick={handleDeleteAllHistory}
+                className="text-red-500 hover:text-red-600 hover:bg-red-500/10 cursor-pointer"
+              >
+                {isDeletingAll ? (
+                  <IconLoader className="size-4 animate-spin" />
+                ) : (
+                  <IconTrash className="size-4" />
+                )}
+                <span>Delete All</span>
+              </Button>
             )}
           </div>
 

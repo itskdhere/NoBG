@@ -42,7 +42,27 @@ export async function DELETE(request: NextRequest) {
   }
 
   const { searchParams } = new URL(request.url);
+
   const id = searchParams.get("id");
+  const all = searchParams.get("all");
+
+  if (all === "true") {
+    try {
+      await prisma.processedImage.deleteMany({
+        where: {
+          userId: session.user.id,
+        },
+      });
+
+      return NextResponse.json({ success: true });
+    } catch (error) {
+      console.error("Failed to delete all image history items:", error);
+      return NextResponse.json(
+        { error: "Internal Server Error" },
+        { status: 500 }
+      );
+    }
+  }
 
   if (!id) {
     return NextResponse.json(
