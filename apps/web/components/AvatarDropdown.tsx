@@ -23,7 +23,7 @@ import {
   IconUserCircle,
 } from "@tabler/icons-react";
 
-export function AvatarDropdown({
+export default function AvatarDropdown({
   session,
 }: {
   session: NonNullable<ReturnType<typeof authClient.useSession>["data"]>;

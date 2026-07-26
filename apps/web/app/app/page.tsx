@@ -8,10 +8,10 @@ import { useEffect, useRef, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { useUploadThing } from "@/lib/uploadthing-client";
 import { AnimatedThemeToggler } from "@workspace/ui/components/animated-theme-toggler";
-import { AvatarDropdown } from "@/components/AvatarDropdown";
+import AvatarDropdown from "@/components/AvatarDropdown";
 import { Button } from "@workspace/ui/components/button";
-import { HistoryCard } from "@/components/HistoryCard";
-import FileSelector from "@/components/FileSelector";
+import HistoryCard from "@/app/app/_components/HistoryCard";
+import FileSelector from "@/app/app/_components/FileSelector";
 import {
   IconCloudUpload,
   IconDots,

@@ -11,7 +11,7 @@ import {
 import { cn } from "@workspace/ui/lib/utils";
 import type { HistoryItem } from "@/app/app/page";
 
-export function HistoryCard({
+export default function HistoryCard({
   item,
   isShowingOriginal,
   onToggleOriginal,
