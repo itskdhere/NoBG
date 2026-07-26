@@ -8,17 +8,16 @@ import { AnimatedThemeToggler } from "@workspace/ui/components/animated-theme-to
 import { InteractiveHoverButton } from "@workspace/ui/components/interactive-hover-button";
 import Footer from "@/components/Footer";
 import {
-  IconBrandGithub,
-  IconLoader,
   IconDownload,
   IconCrosshair,
   IconSparkles,
-  IconShieldCheck,
+  IconCloud,
   IconUpload,
   IconShoppingBag,
   IconSpeakerphone,
   IconUserCircle,
   IconPalette,
+  IconTournament,
 } from "@tabler/icons-react";
 
 export default function Landing() {
@@ -116,11 +115,11 @@ export default function Landing() {
               </p>
             </div>
             <div className="flex flex-col items-center text-center gap-3 p-6">
-              <IconShieldCheck size={40} className="text-primary" />
-              <h3 className="text-xl font-semibold">Privacy First</h3>
+              <IconCloud size={40} className="text-primary" />
+              <h3 className="text-xl font-semibold">Instant Cloud Sync</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Guest images are processed in RAM and deleted immediately. We
-                don&apos;t train on your data.
+                Access your processed transparent images and edit history
+                anytime from your dashboard.
               </p>
             </div>
           </div>
@@ -143,7 +142,7 @@ export default function Landing() {
             </div>
             <div className="flex flex-col items-center text-center gap-3 p-6">
               <div className="flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 text-primary mb-2">
-                <IconLoader size={28} />
+                <IconTournament size={28} />
               </div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Step 2

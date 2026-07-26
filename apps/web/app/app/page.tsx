@@ -12,6 +12,7 @@ import AvatarDropdown from "@/components/AvatarDropdown";
 import { Button } from "@workspace/ui/components/button";
 import HistoryCard from "@/app/app/_components/HistoryCard";
 import FileSelector from "@/app/app/_components/FileSelector";
+import Footer from "@/components/Footer";
 import {
   IconCloudUpload,
   IconDots,
@@ -461,6 +462,8 @@ export default function App() {
           )}
         </section>
       </main>
+
+      <Footer />
     </>
   );
 }

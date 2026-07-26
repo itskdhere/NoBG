@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="https://nobg.itskdhere.com" title="nobg.itskdhere.com">
-    <img alt="nobg.itskdhere.com" src="https://img.shields.io/badge/nobg.itskdhere.com-505050?style=for-the-badge&logoColor=white">
+    <img alt="nobg.itskdhere.com" src="https://img.shields.io/badge/visit-nobg.itskdhere.com-blue?style=for-the-badge&logoColor=white">
   </a>
 </p>
 
@@ -69,5 +69,5 @@ NoBG is an open-source, full-stack application designed to automatically remove 
 Coming soon...
 
 <p align="center">
-  <a href="https://youtu.be/EA4DipdhpV8">🙂</a>
+  <a href="https://youtu.be/EA4DipdhpV8">🖼️</a>
 </p>
