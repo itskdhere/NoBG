@@ -44,9 +44,9 @@ export default function FileSelector({
   });
 
   useEffect(() => {
-    filesListRef.current = files.map((f) =>
-      f.file instanceof File ? f.file : new File([], f.file.name)
-    );
+    filesListRef.current = files
+      .map((f) => f.file)
+      .filter((file): file is File => file instanceof File);
   }, [files, filesListRef]);
 
   const handleContinue = () => {

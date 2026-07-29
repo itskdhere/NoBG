@@ -47,6 +47,8 @@ export default function App() {
     "uploading" | "queued" | "removing-bg" | null
   >(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [currentUploadIndex, setCurrentUploadIndex] = useState(1);
+  const [totalUploadCount, setTotalUploadCount] = useState(1);
   const [isUploading, setIsUploading] = useState(false);
   const filesListRef = useRef<File[]>([]);
   const jobMap = useRef<Record<string, string>>({});
@@ -110,18 +112,26 @@ export default function App() {
   const uploadFiles = async (files: File[]) => {
     setIsUploading(true);
     setUploadProgress(0);
+    const total = files.length;
+    setTotalUploadCount(total);
+    setCurrentUploadIndex(1);
 
     try {
-      const results = await Promise.all(
-        files.map(async (file) => {
-          const jobId = crypto.randomUUID();
-          const res = await startUpload([file], { jobId });
-          if (!res || !res[0]) throw new Error("Upload failed");
+      const results: { jobId: string; url: string }[] = [];
 
-          jobMap.current[jobId] = file.name;
-          return { jobId, url: res[0].ufsUrl };
-        })
-      );
+      for (let i = 0; i < total; i++) {
+        const file = files[i];
+        if (!file) continue;
+        setCurrentUploadIndex(i + 1);
+        setUploadProgress(0);
+
+        const jobId = crypto.randomUUID();
+        const res = await startUpload([file], { jobId });
+        if (!res || !res[0]) throw new Error("Upload failed");
+
+        jobMap.current[jobId] = file.name;
+        results.push({ jobId, url: res[0].ufsUrl });
+      }
 
       setUploadProgress(100);
       const jobIds = results.map((r) => r.jobId);
@@ -308,7 +318,9 @@ export default function App() {
               )}
               <p className="text-lg font-medium">
                 {processingState === "uploading" &&
-                  `Uploading... ${uploadProgress}%`}
+                  (totalUploadCount > 1
+                    ? `Uploading (${currentUploadIndex} of ${totalUploadCount})... ${uploadProgress}%`
+                    : `Uploading... ${uploadProgress}%`)}
                 {processingState === "queued" && "Queued for processing..."}
                 {processingState === "removing-bg" && "Removing background..."}
               </p>
