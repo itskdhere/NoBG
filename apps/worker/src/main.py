@@ -50,20 +50,38 @@ cpu_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="cpu_worker"
 network_semaphore = asyncio.Semaphore(5)
 
 
-async def upload_to_uploadthing(client: httpx.AsyncClient, image_bytes: bytes, filename: str) -> str:
+async def upload_to_uploadthing(
+    client: httpx.AsyncClient,
+    image_bytes: bytes,
+    filename: str,
+    job_id: str = None,
+    user_id: str = None,
+    source_url: str = None,
+    original_filename: str = None,
+) -> str:
     url = f"{WEB_APP_URL}/api/worker/upload"
     
     files = {"file": (filename, image_bytes, "image/png")}
+    data = {}
+    if job_id:
+        data["jobId"] = job_id
+    if user_id:
+        data["userId"] = user_id
+    if source_url:
+        data["sourceUrl"] = source_url
+    if original_filename:
+        data["originalName"] = original_filename
+
     headers = {"Authorization": f"Bearer {WORKER_SECRET}"} if WORKER_SECRET else {}
     
-    response = await client.post(url, files=files, headers=headers, timeout=60.0)
+    response = await client.post(url, data=data, files=files, headers=headers, timeout=60.0)
 
     if response.status_code != 200:
         logger.error(f"Worker Upload API error: {response.status_code} - {response.text}")
         response.raise_for_status()
 
-    data = response.json()
-    blob_url = data.get("url")
+    data_res = response.json()
+    blob_url = data_res.get("url")
 
     if not blob_url:
         raise ValueError("Worker Upload API did not return a URL")
@@ -79,6 +97,7 @@ async def process_job(job_data_str: str):
         job_id = job["id"]
         source_url = job["url"]
         original_filename = job.get("filename", "image.png")
+        user_id = job.get("userId")
 
         logger.info(f"Processing job {job_id} from {source_url}")
 
@@ -109,7 +128,15 @@ async def process_job(job_data_str: str):
             else:
                 filename = f"{original_filename}-nobg.png"
 
-            result_url = await upload_to_uploadthing(client, img_bytes, filename)
+            result_url = await upload_to_uploadthing(
+                client,
+                img_bytes,
+                filename,
+                job_id=job_id,
+                user_id=user_id,
+                source_url=source_url,
+                original_filename=original_filename,
+            )
 
             await r.hset(
                 f"{PREFIX}:job_status:{job_id}",
