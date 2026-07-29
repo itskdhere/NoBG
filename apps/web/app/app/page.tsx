@@ -12,12 +12,12 @@ import AvatarDropdown from "@/components/AvatarDropdown";
 import { Button } from "@workspace/ui/components/button";
 import HistoryCard from "@/app/app/_components/HistoryCard";
 import FileSelector from "@/app/app/_components/FileSelector";
+import ProcessedImageCard from "@/app/app/_components/ProcessedImageCard";
 import Footer from "@/components/Footer";
 import {
   IconCloudUpload,
   IconDots,
   IconLoader,
-  IconCloudDownload,
   IconAlertOctagon,
   IconRefreshDot,
   IconHistory,
@@ -344,55 +344,28 @@ export default function App() {
               </Button>
               <div
                 className={cn(
-                  "grid gap-4 mt-4",
+                  "grid gap-6 mt-4 w-full justify-center justify-items-center mx-auto",
                   processedImages.length === 1
                     ? "grid-cols-1"
-                    : "grid-cols-1 md:grid-cols-2"
+                    : processedImages.length === 2
+                      ? "grid-cols-1 sm:grid-cols-2"
+                      : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
                 )}
+                style={{
+                  maxWidth:
+                    processedImages.length === 1
+                      ? "320px"
+                      : processedImages.length === 2
+                        ? "664px"
+                        : "896px",
+                }}
               >
                 {processedImages.map(({ src, originalName }) => (
-                  <div
+                  <ProcessedImageCard
                     key={src}
-                    className="flex flex-col justify-between items-center gap-4 border rounded-lg p-2"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={src}
-                      alt={originalName}
-                      className="h-auto w-full max-w-xs object-contain"
-                    />
-
-                    <div className="flex flex-col justify-center items-center w-full">
-                      <Button
-                        size="default"
-                        variant="default"
-                        className="cursor-pointer"
-                        onClick={async () => {
-                          try {
-                            const response = await fetch(src);
-                            const blob = await response.blob();
-                            const url = window.URL.createObjectURL(blob);
-                            const link = document.createElement("a");
-                            link.href = url;
-                            link.download = `${originalName.replace(
-                              /\.[^/.]+$/,
-                              ""
-                            )}-nobg.png`;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                            window.URL.revokeObjectURL(url);
-                          } catch (error) {
-                            console.error("Failed to download image", error);
-                            window.open(src, "_blank");
-                          }
-                        }}
-                      >
-                        <IconCloudDownload size={18} />
-                        <span>Download</span>
-                      </Button>
-                    </div>
-                  </div>
+                    src={src}
+                    originalName={originalName}
+                  />
                 ))}
               </div>
             </div>
