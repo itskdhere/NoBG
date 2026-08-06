@@ -13,10 +13,6 @@ import {
   IconSparkles,
   IconCloud,
   IconUpload,
-  IconShoppingBag,
-  IconSpeakerphone,
-  IconUserCircle,
-  IconPalette,
   IconTournament,
 } from "@tabler/icons-react";
 
@@ -164,56 +160,6 @@ export default function Landing() {
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Save your transparent PNG instantly.
               </p>
-            </div>
-          </div>
-        </section>
-
-        <section className="flex flex-col items-center w-full max-w-5xl py-16">
-          <h2 className="text-3xl font-bold mb-12">Use Cases</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
-            <div className="flex items-start gap-4 rounded-xl border p-6">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary shrink-0">
-                <IconShoppingBag size={24} />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold mb-1">E-Commerce</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Turn product photos into professional catalog shots.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4 rounded-xl border p-6">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary shrink-0">
-                <IconSpeakerphone size={24} />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold mb-1">Marketing</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Create clean assets for social media and ads.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4 rounded-xl border p-6">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary shrink-0">
-                <IconUserCircle size={24} />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold mb-1">Profile Pics</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Remove messy backgrounds for LinkedIn or CVs.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4 rounded-xl border p-6">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary shrink-0">
-                <IconPalette size={24} />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold mb-1">Designers</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Stop wasting hours masking objects in Photoshop.
-                </p>
-              </div>
             </div>
           </div>
         </section>

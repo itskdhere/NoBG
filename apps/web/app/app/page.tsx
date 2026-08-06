@@ -19,9 +19,9 @@ import {
   IconDots,
   IconLoader,
   IconAlertOctagon,
-  IconRefreshDot,
   IconHistory,
   IconTrash,
+  IconPlus,
 } from "@tabler/icons-react";
 import { cn } from "@workspace/ui/lib/utils";
 
@@ -339,8 +339,8 @@ export default function App() {
                   setState("idle");
                 }}
               >
-                <IconRefreshDot size={18} />
-                Start Over
+                <IconPlus size={18} />
+                New Image(s)
               </Button>
               <div
                 className={cn(
