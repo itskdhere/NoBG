@@ -90,8 +90,21 @@ export default function App() {
 
   const handleDeleteHistory = async (id: string) => {
     try {
+      const itemToDelete = history.find((item) => item.id === id);
       await axios.delete(`/api/history?id=${id}`);
       setHistory((prev) => prev.filter((item) => item.id !== id));
+
+      if (itemToDelete) {
+        setProcessedImages((prev) => {
+          const updated = prev.filter(
+            (img) => img.src !== itemToDelete.resultUrl
+          );
+          if (updated.length === 0 && state === "done") {
+            setState("idle");
+          }
+          return updated;
+        });
+      }
     } catch (error) {
       console.error("Failed to delete history item:", error);
     }
@@ -102,6 +115,10 @@ export default function App() {
     try {
       await axios.delete("/api/history?all=true");
       setHistory([]);
+      setProcessedImages([]);
+      if (state === "done") {
+        setState("idle");
+      }
     } catch (error) {
       console.error("Failed to delete all history:", error);
     } finally {
