@@ -21,7 +21,7 @@ export default function Landing() {
 
   return (
     <>
-      <header className="absolute w-full px-6 md:px-10 py-2 md:py-4">
+      <header className="sticky top-0 z-50 w-full px-6 md:px-10 py-2 md:py-4 border-b bg-background/80 backdrop-blur-md">
         <div className="flex justify-center items-center w-full">
           <div className="flex justify-between items-center w-full max-w-4xl">
             <Link
@@ -31,6 +31,21 @@ export default function Landing() {
               <Image src="/logo.png" alt="NoBG" width={28} height={28} />
               <h1 className="text-2xl font-bold">NoBG</h1>
             </Link>
+
+            <nav className="flex items-center gap-8 sm:gap-10 text-base font-medium text-muted-foreground">
+              <Link
+                href="#features"
+                className="hover:text-foreground transition-colors"
+              >
+                Features
+              </Link>
+              <Link
+                href="#how-it-works"
+                className="hover:text-foreground transition-colors"
+              >
+                How It Works
+              </Link>
+            </nav>
 
             <div className="flex justify-center items-center gap-4">
               <AnimatedThemeToggler className="hover:cursor-pointer" />
@@ -74,7 +89,7 @@ export default function Landing() {
       </header>
 
       <main className="flex flex-col justify-center items-center">
-        <section className="flex flex-col justify-center items-center h-screen w-full max-w-4xl py-14">
+        <section className="flex flex-col justify-center items-center h-[calc(100vh-70px)] w-full max-w-4xl">
           <h2 className="text-3xl sm:text-6xl font-bold mt-4">
             <span>Backgrounds, </span>
             <span className="text-muted-foreground">Gone.</span>
@@ -91,8 +106,11 @@ export default function Landing() {
           </Link>
         </section>
 
-        <section className="flex flex-col items-center w-full max-w-5xl py-16">
-          <h2 className="text-3xl font-bold mb-12">Features</h2>
+        <section
+          id="features"
+          className="flex flex-col items-center w-full max-w-5xl pt-5 pb-40 scroll-mt-20"
+        >
+          <h2 className="text-3xl font-bold mb-6">Features</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
             <div className="flex flex-col items-center text-center gap-3 p-6">
               <IconCrosshair size={40} className="text-primary" />
@@ -121,8 +139,11 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="flex flex-col items-center w-full max-w-5xl py-16">
-          <h2 className="text-3xl font-bold mb-12">How It Works</h2>
+        <section
+          id="how-it-works"
+          className="flex flex-col items-center w-full max-w-5xl pt-10 pb-40 scroll-mt-20"
+        >
+          <h2 className="text-3xl font-bold mb-6">How It Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
             <div className="flex flex-col items-center text-center gap-3 p-6">
               <div className="flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 text-primary mb-2">
@@ -145,7 +166,7 @@ export default function Landing() {
               </p>
               <h3 className="text-lg font-semibold">Process</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Our AI detects the subject and removes the background in &lt; 3
+                Our AI detects the subject and removes the background in &lt; 5
                 seconds.
               </p>
             </div>
@@ -164,12 +185,12 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="flex flex-col items-center w-full max-w-3xl py-20 text-center">
+        <section className="flex flex-col items-center w-full max-w-3xl pt-10 pb-30 text-center">
           <h2 className="text-3xl font-bold mb-4">
             Ready to Remove Backgrounds?
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
-            No sign-up needed. Upload your first image and see the magic.
+            No credit card required. Upload your first image and see the magic.
           </p>
           <Link href={session ? "/app" : "/signup"}>
             <InteractiveHoverButton className="mt-10">
