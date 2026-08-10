@@ -90,7 +90,7 @@ async def upload_to_uploadthing(
     return blob_url
 
 
-async def process_job(job_data_str: str):
+async def process_job(job_data_str: str, client: httpx.AsyncClient):
     job_id = None
     try:
         job = json.loads(job_data_str)
@@ -101,55 +101,54 @@ async def process_job(job_data_str: str):
 
         logger.info(f"Processing job {job_id} from {source_url}")
 
-        async with httpx.AsyncClient() as client:
-            response = await client.get(source_url, timeout=30.0)
-            response.raise_for_status()
+        response = await client.get(source_url, timeout=30.0)
+        response.raise_for_status()
 
-            await r.hset(f"{PREFIX}:job_status:{job_id}", mapping={"status": "processing"})
+        await r.hset(f"{PREFIX}:job_status:{job_id}", mapping={"status": "processing"})
 
-            loop = asyncio.get_running_loop()
-            async with cpu_semaphore:
-                input_image = await loop.run_in_executor(
-                    cpu_executor, Image.open, io.BytesIO(response.content)
-                )
-                output_image = await loop.run_in_executor(
-                    cpu_executor, functools.partial(remove, session=session), input_image
-                )
-                img_byte_arr = io.BytesIO()
-                await loop.run_in_executor(
-                    cpu_executor, output_image.save, img_byte_arr, "PNG"
-                )
-                img_bytes = img_byte_arr.getvalue()
-
-            name_parts = original_filename.rsplit(".", 1)
-            if len(name_parts) == 2:
-                base_name, ext = name_parts
-                filename = f"{base_name}-nobg.{ext}"
-            else:
-                filename = f"{original_filename}-nobg.png"
-
-            result_url = await upload_to_uploadthing(
-                client,
-                img_bytes,
-                filename,
-                job_id=job_id,
-                user_id=user_id,
-                source_url=source_url,
-                original_filename=original_filename,
+        loop = asyncio.get_running_loop()
+        async with cpu_semaphore:
+            input_image = await loop.run_in_executor(
+                cpu_executor, Image.open, io.BytesIO(response.content)
             )
-
-            await r.hset(
-                f"{PREFIX}:job_status:{job_id}",
-                mapping={
-                    "status": "completed",
-                    "result_url": result_url,
-                    "sourceUrl": source_url,
-                    "filename": original_filename,
-                },
+            output_image = await loop.run_in_executor(
+                cpu_executor, functools.partial(remove, session=session), input_image
             )
-            await r.expire(f"{PREFIX}:job_status:{job_id}", 3600)
+            img_byte_arr = io.BytesIO()
+            await loop.run_in_executor(
+                cpu_executor, output_image.save, img_byte_arr, "PNG"
+            )
+            img_bytes = img_byte_arr.getvalue()
 
-            logger.info(f"Job {job_id} completed successfully. URL: {result_url}")
+        name_parts = original_filename.rsplit(".", 1)
+        if len(name_parts) == 2:
+            base_name, ext = name_parts
+            filename = f"{base_name}-nobg.{ext}"
+        else:
+            filename = f"{original_filename}-nobg.png"
+
+        result_url = await upload_to_uploadthing(
+            client,
+            img_bytes,
+            filename,
+            job_id=job_id,
+            user_id=user_id,
+            source_url=source_url,
+            original_filename=original_filename,
+        )
+
+        await r.hset(
+            f"{PREFIX}:job_status:{job_id}",
+            mapping={
+                "status": "completed",
+                "result_url": result_url,
+                "sourceUrl": source_url,
+                "filename": original_filename,
+            },
+        )
+        await r.expire(f"{PREFIX}:job_status:{job_id}", 3600)
+
+        logger.info(f"Job {job_id} completed successfully. URL: {result_url}")
 
     except Exception as e:
         logger.error(f"Error processing job: {str(e)}")
@@ -161,7 +160,7 @@ async def process_job(job_data_str: str):
                 logger.error(f"Failed to update failed status in Redis: {str(redis_err)}")
 
 
-async def worker_loop():
+async def worker_loop(client: httpx.AsyncClient):
     logger.info(f"Starting Redis worker loop... Listening on queue: {PREFIX}:job_queue")
     while True:
         try:
@@ -173,7 +172,7 @@ async def worker_loop():
                     
                     async def run_and_release():
                         try:
-                            await process_job(job_data_str)
+                            await process_job(job_data_str, client)
                         finally:
                             network_semaphore.release()
                             
@@ -196,15 +195,21 @@ async def worker_loop():
             await asyncio.sleep(5)
 
 
+http_client: httpx.AsyncClient | None = None
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    worker_task = asyncio.create_task(worker_loop())
+    global http_client
+    http_client = httpx.AsyncClient(timeout=60.0)
+    worker_task = asyncio.create_task(worker_loop(http_client))
     yield
     worker_task.cancel()
     try:
         await worker_task
     except asyncio.CancelledError:
         pass
+    await http_client.aclose()
     cpu_executor.shutdown(wait=True)
 
 
