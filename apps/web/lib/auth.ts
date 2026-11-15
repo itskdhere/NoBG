@@ -20,6 +20,19 @@ export const auth = betterAuth({
     delete: async (key) => {
       await redis.del(`${prefix}:${key}`);
     },
+    getAndDelete: async (key) => {
+      return await redis.getDel(`${prefix}:${key}`);
+    },
+    increment: async (key, ttl) => {
+      const k = `${prefix}:${key}`;
+      // EXPIRE NX (Redis 7+) only sets the TTL when the key is first created
+      const [value] = await redis
+        .multi()
+        .incr(k)
+        .expire(k, ttl, "NX")
+        .execTyped();
+      return value;
+    },
   },
   socialProviders: {
     google: {
