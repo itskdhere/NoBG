@@ -23,12 +23,12 @@
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
     "@redis/client": "^6.3.1",
-    "@tabler/icons-react": "3.51.0",
+    "@tabler/icons-react": "3.52.0",
     "@uploadthing/react": "^7.3.3",
     "@vercel/analytics": "^2.0.1",
     "@workspace/ui": "workspace:*",
     "axios": "^1.21.1",
-    "better-auth": "^1.7.22",
+    "better-auth": "^1.7.26",
     "next": "16.4.6",
     "next-themes": "^0.4.6",
     "pg": "^8.23.1",
@@ -46,7 +46,7 @@
     "@types/react-dom": "^19.3.0",
     "@workspace/eslint-config": "workspace:^",
     "@workspace/typescript-config": "workspace:*",
-    "eslint": "^10.14.0",
+    "eslint": "^10.15.0",
     "prisma": "^7.10.1",
     "typescript": "^7.0.2"
   }

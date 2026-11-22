@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@base-ui/react": "1.9.0",
-    "@tabler/icons-react": "3.51.0",
+    "@tabler/icons-react": "3.52.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "next-themes": "^0.4.6",
@@ -21,13 +21,13 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.5",
-    "@turbo/gen": "^2.11.11",
+    "@turbo/gen": "^2.11.13",
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
-    "eslint": "^10.14.0",
+    "eslint": "^10.15.0",
     "tailwindcss": "^4.3.5",
     "typescript": "^7.0.2"
   },
