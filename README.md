@@ -108,8 +108,8 @@ NoBG is an open-source, full-stack application designed to automatically remove 
 #### 1. Clone the repository
 
 ```bash
-git clone https://github.com/itskdhere/NoBG.git
-cd NoBG
+git clone https://github.com/itskdhere/nobg.git
+cd nobg
 ```
 
 #### 2. Environment Variables Setup

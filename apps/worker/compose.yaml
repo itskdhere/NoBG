@@ -9,7 +9,7 @@ services:
         - itskdhere/nobg-worker:latest
     image: itskdhere/nobg-worker:latest
     container_name: worker
-    ports:
-      - "8000:7860"
     env_file:
       - .env
+    ports:
+      - "8000:7860"

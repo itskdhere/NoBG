@@ -18,13 +18,13 @@ export default function Footer() {
 
       <div>
         <Link
-          href="https://github.com/itskdhere/NoBG"
+          href="https://github.com/itskdhere/nobg"
           target="_blank"
           rel="noopener noreferrer"
           className="flex justify-center items-center gap-1 underline"
         >
           <IconBrandGithub className="size-3.5" />
-          <span>itskdhere/NoBG</span>
+          <span>itskdhere/nobg</span>
         </Link>
       </div>
     </footer>
